@@ -43,6 +43,9 @@ const server = http.createServer(async (req, res) => {
   let file = isConsole ? await existing(consoleDist, 'system.html') : null;
   if (isConsole && !file) return json(res, 503, '请先执行 npm run build');
   const relative = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
+  if (pathname === '/__auth_gate__.js' && new URL(req.url, 'http://localhost').searchParams.get('surface') === 'main') {
+    file ||= await existing(mainDist, relative);
+  }
   file ||= await existing(consoleDist, relative);
   file ||= await existing(mainDist, relative);
   if (!file && !path.extname(pathname)) file = await existing(mainDist, 'index.html');

@@ -1,0 +1,1 @@
+{"passed":5,"checks":["preview selects main identity script","console identity script remains separate","risk alias serves current source","no backend remains explicit JSON 503","main entry includes current gate and scoped styles"]}
