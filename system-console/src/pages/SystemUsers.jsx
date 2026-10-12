@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Button, Card, Form, Input, Modal, Popconfirm, Segmented, Select, Space, Switch, Table, Tag, message,
+  Button, Card, ConfigProvider, Empty, Skeleton, Form, Input, Modal, Popconfirm, Segmented, Select, Space, Switch, Table, Tag, message,
 } from "antd";
 import { api } from "../api.js";
 import { useProto } from "../store.jsx";
+import { rosterTheme, rosterVariables } from "../theme.js";
+import "./SystemUsers.css";
 
 function randPassword() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#";
@@ -243,13 +245,13 @@ export default function SystemUsers() {
         width: 180,
         render: (_, r) => (
           <div>
-            <div style={{ fontWeight: 600 }}>{r.name || "-"}</div>
-            <div style={{ color: "#86909c", fontSize: 12 }}>{r.username}</div>
+            <div className="roster-name">{r.name || "-"}</div>
+            <div className="roster-secondary roster-small">{r.username}</div>
           </div>
         ),
       },
-      { title: "工号", dataIndex: "employee_no", width: 100, render: (v) => v || "-" },
-      { title: "手机号", dataIndex: "mobile", width: 120, render: (v) => v || "-" },
+      { title: "工号", dataIndex: "employee_no", width: 100, align: "right", className: "roster-number", render: (v) => v || "-" },
+      { title: "手机号", dataIndex: "mobile", width: 128, align: "right", className: "roster-number", render: (v) => v || "-" },
       {
         title: "角色",
         key: "role",
@@ -258,9 +260,9 @@ export default function SystemUsers() {
         filterMultiple: false,
         filteredValue: roleFilter === "" ? null : [roleFilter],
         render: (_, r) => (
-          <Space size={4} wrap>
+          <Space size={8} wrap>
             {(r.roles || []).map((x) => (
-              <Tag key={x.id} color="blue">{x.name}</Tag>
+              <Tag key={x.id} className="roster-tag">{x.name}</Tag>
             ))}
             {!(r.roles || []).length && "-"}
           </Space>
@@ -268,18 +270,12 @@ export default function SystemUsers() {
       },
       {
         title: "数据范围",
-        width: 110,
+        width: 176,
         render: (_, r) => (
-          <Tag color={r.scope === "all" ? "green" : "orange"}>{SCOPE_LABEL[r.scope] || r.scope}</Tag>
-        ),
-      },
-      {
-        title: "包体数据范围",
-        width: 180,
-        render: (_, r) => (
-          <Tag color={r.scope === "all" ? "green" : "blue"}>
-            {r.scope === "all" ? "全部" : "由包体配置管理"}
-          </Tag>
+          <div>
+            <Tag className="roster-tag">{SCOPE_LABEL[r.scope] || r.scope}</Tag>
+            <div className="roster-secondary roster-small">包体：{r.scope === "all" ? "全部" : "由包体配置管理"}</div>
+          </div>
         ),
       },
       {
@@ -291,9 +287,9 @@ export default function SystemUsers() {
           peopleOptions.every((option) => (r.people_scope || []).includes(option.value))
             ? <span>全部人员</span>
             : (
-              <Space size={2} wrap>
-                {(r.people_scope || []).slice(0, 4).map((p) => <Tag key={p} color="purple">{p}</Tag>)}
-                {(r.people_scope || []).length === 0 && <span style={{ color: "#86909c" }}>默认仅本人</span>}
+              <Space size={8} wrap>
+                {(r.people_scope || []).slice(0, 4).map((p) => <Tag key={p} className="roster-tag">{p}</Tag>)}
+                {(r.people_scope || []).length === 0 && <span className="roster-secondary">默认仅本人</span>}
               </Space>
             )
         ),
@@ -303,6 +299,7 @@ export default function SystemUsers() {
         width: 90,
         render: (_, r) => (
           <Switch
+            className="roster-status"
             aria-label={`${r.name || r.username}的账号状态`}
             loading={pendingStatus.has(r.id)}
             size="small"
@@ -314,7 +311,7 @@ export default function SystemUsers() {
           />
         ),
       },
-      { title: "最近登录", dataIndex: "last_login", width: 150, render: (v) => (v ? v.replace("T", " ").slice(0, 16) : "-") },
+      { title: "最近登录", dataIndex: "last_login", width: 160, align: "right", className: "roster-number", render: (v) => (v ? v.replace("T", " ").slice(0, 16) : "-") },
       {
         title: "操作",
         width: 180,
@@ -353,38 +350,37 @@ export default function SystemUsers() {
   );
 
   return (
-    <Card size="small" title="花名册" extra={
-      <Space>
-        <span style={{ color: "#86909c", fontSize: 12 }}>共 {data.total} 人</span>
-        {hasPerm("system:user:create") && (
-          <Button type="primary" size="small" onClick={openCreate}>新增员工</Button>
-        )}
-      </Space>
-    }>
-      <Space style={{ marginBottom: 12 }} wrap>
+    <ConfigProvider theme={rosterTheme}>
+    <section className="roster-page" style={rosterVariables} aria-label="员工花名册">
+    <Card className="roster-card" size="small" title={<span>花名册 <span className="roster-secondary roster-small">共 {data.total} 人</span></span>}>
+      <div className="roster-toolbar">
+      <div className="roster-filters">
         <Input.Search
           placeholder="搜索姓名/账号/工号/手机号"
           allowClear
-          style={{ width: 240 }}
+          className="roster-search"
           onSearch={(v) => { setPage(1); setKeyword(v); }}
           onChange={(e) => { if (!e.target.value) { setPage(1); setKeyword(""); } }}
         />
         <Select
           allowClear
           placeholder="状态"
-          style={{ width: 110 }}
+          className="roster-filter"
           value={statusFilter === "" ? undefined : statusFilter}
           onChange={(v) => { setPage(1); setStatusFilter(v ?? ""); }}
           options={[{ value: 1, label: "启用" }, { value: 0, label: "停用" }]}
         />
-      </Space>
-      <Table
+      </div>
+      {hasPerm("system:user:create") && <Button type="primary" onClick={openCreate}>新增员工</Button>}
+      </div>
+      {loading && data.list.length === 0 ? <div className="roster-loading" role="status" aria-label="正在加载员工"><Skeleton active paragraph={{ rows: 8 }} /></div> : <Table
         size="small"
         rowKey="id"
         loading={loading}
         columns={columns}
         dataSource={data.list}
-        scroll={{ x: 1480 }}
+        scroll={{ x: 1304 }}
+        locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无员工数据" /> }}
         onChange={(_, filters, __, extra) => {
           if (extra.action === "filter") {
             setPage(1);
@@ -395,9 +391,11 @@ export default function SystemUsers() {
           current: page, pageSize: size, total: data.total, showSizeChanger: true, showTotal: (t) => `共 ${t} 条`,
           onChange: (p, s) => { setPage(p); setSize(s); },
         }}
-      />
+      />}
 
       <Modal
+        className="roster-modal"
+        style={rosterVariables}
         title={editing ? "编辑员工" : "新增员工"}
         open={editOpen}
         width={680}
@@ -406,7 +404,7 @@ export default function SystemUsers() {
         onCancel={() => setEditOpen(false)}
       >
         <Form form={form} layout="vertical" initialValues={{ status: 1, scope_mode: "sub", people_scope: [], role_ids: [] }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 180px), 1fr))", gap: "0 16px" }}>
+          <div className="roster-form-grid">
             <Form.Item label="姓名" name="name" rules={[{ required: true, message: "请输入姓名" }]}>
               <Input placeholder="真实姓名" />
             </Form.Item>
@@ -489,6 +487,8 @@ export default function SystemUsers() {
       </Modal>
 
       <Modal
+        className="roster-modal"
+        style={rosterVariables}
         title={`重置密码 — ${pwdUser?.name || ""}`}
         open={pwdOpen}
         width={420}
@@ -497,14 +497,14 @@ export default function SystemUsers() {
         confirmLoading={pwdSaving}
         onCancel={closePwd}
       >
-        <div style={{ marginBottom: 10, padding: "8px 10px", background: "#f5f6f8", borderRadius: 6, color: "#4e5969", fontSize: 13 }}>
+        <div className="roster-password-note">
           {user?.is_super
             ? pwdResetDone ? "密码已更新，可通过下方眼睛查看当前密码。" : "点击眼睛查看当前密码。"
             : "仅超级管理员可查看当前密码。"}
         </div>
         {user?.is_super && (
-          <div style={{ marginBottom: 10 }}>
-            <div style={{ color: "#4e5969", fontSize: 12, marginBottom: 4 }}>当前密码</div>
+          <div className="roster-password-current">
+            <div className="roster-password-label">当前密码</div>
             <Input.Password
               value={currentPwdLoaded ? currentPwdValue : currentPwdUnavailable ? "" : "********"}
               readOnly
@@ -534,8 +534,10 @@ export default function SystemUsers() {
             <Button onClick={() => setPwdValue(randPassword())}>随机生成</Button>
           )}
         </Space.Compact>
-        <div style={{ color: "#86909c", fontSize: 12, marginTop: 6 }}>密码需 ≥8 位且包含字母和数字。</div>
+        <div className="roster-password-help">密码需 ≥8 位且包含字母和数字。</div>
       </Modal>
     </Card>
+    </section>
+    </ConfigProvider>
   );
 }

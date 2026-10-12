@@ -1,0 +1,40 @@
+[
+  {
+    "passed": 12,
+    "cases": [
+      "invalid HTML success rejected",
+      "missing list rejected",
+      "valid list preserved and GET has no content type",
+      "503 HTML error is readable",
+      "network error mapped",
+      "timeout mapped",
+      "login 401 keeps password error and session",
+      "protected 401 expires session",
+      "stale 401 cannot expire newer session",
+      "empty 204 write accepted",
+      "invalid identity rejected",
+      "invalid status response is rejected"
+    ]
+  },
+  {
+    "passed": 8,
+    "cases": [
+      "identity 503 preserves token and blocks roster",
+      "identity retry restores roster",
+      "delete final row returns to previous page",
+      "status rapid clicks only issue one request",
+      "disabled filter keeps selected label",
+      "list failure preserves existing rows",
+      "profile success and role failure refreshes roster and keeps retry form",
+      "clipboard rejection is handled with a user hint"
+    ]
+  },
+  {
+    "passed": 3,
+    "cases": [
+      "console boot avoids duplicate identity request",
+      "retry never reuses malformed identity response",
+      "verified identity restores navigation"
+    ]
+  }
+]
