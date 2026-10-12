@@ -1,5 +1,37 @@
 import { $n, $t, As, C, Co, Dc, Dt, Go, IR0, Jt, Ke, Me, Mo, Mt, Nr, Pt, Qr, RP, St, To, Tq, Tr, Wt, Ze, Zt, __API__, aggM, bi, br, dcTableWithSort, dr, dt, en, er, fe, fetch, fn, ft, gi, grpAgg2, hr, jo, kn, ls, nn, tr, tt, xr, xt } from "../runtime/application.js";
 
+function DCMetricIcon(title) {
+  const paths = {
+    "新账号数": "M11 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0 M3 20v-2a4.5 4.5 0 0 1 4.5-4.5H9 M17 10v8 M13 14h8",
+    "新账号付费数": "M11 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0 M3 20v-2a4.5 4.5 0 0 1 4.5-4.5H9 M21 16.5a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0 M14.5 14.5l2 2 2-2 M16.5 16.5v2.5 M14.5 17h4 M18 3v5 M15.5 5.5h5",
+    "新账号付费总额": "M18 13a7.5 7.5 0 1 1-8-8 M7.5 10l3 3 3-3 M10.5 13v5 M8 14h5 M8 16h5 M19 3v6 M16 6h6",
+    "当月注册账号总数": "M8 3v4 M16 3v4 M3.5 9h17 M6 5h12a2.5 2.5 0 0 1 2.5 2.5v12A2.5 2.5 0 0 1 18 22H6a2.5 2.5 0 0 1-2.5-2.5v-12A2.5 2.5 0 0 1 6 5 M14 13.5a2 2 0 1 1-4 0 2 2 0 0 1 4 0 M8.5 19v-.5a3.5 3.5 0 0 1 7 0v.5",
+    "活跃账号数": "M11 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0 M3 20v-2a4.5 4.5 0 0 1 4.5-4.5H9 M12 17h2l2-4 2 7 2-3h2",
+    "账号付费数": "M11 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0 M3 20v-2a4.5 4.5 0 0 1 4.5-4.5H9 M21 16.5a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0 M14.5 14.5l2 2 2-2 M16.5 16.5v2.5 M14.5 17h4",
+    "账号付费总额": "M20 8V6a2 2 0 0 0-2-2H6a2.5 2.5 0 0 0 0 5h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2.5 2.5 0 0 1-2.5-2.5V6.5 M20 12h-5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h5 M17 14.5h.01",
+    "当月付费总额": "M8 3v4 M16 3v4 M3.5 9h17 M6 5h12a2.5 2.5 0 0 1 2.5 2.5v12A2.5 2.5 0 0 1 18 22H6a2.5 2.5 0 0 1-2.5-2.5v-12A2.5 2.5 0 0 1 6 5 M9 12l3 3 3-3 M12 15v5 M9.5 16h5 M9.5 18h5"
+  };
+  return C.jsx("svg", {
+    width: 24,
+    height: 24,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.5,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    "aria-hidden": true,
+    focusable: "false",
+    style: {
+      display: "block",
+      flexShrink: 0
+    },
+    children: C.jsx("path", {
+      d: paths[title]
+    })
+  });
+}
+
 export default function DashboardPage() {
   const [rptG, rptGSet] = Ke.useState("day"),
     W = ft(h => h.packageType),
@@ -528,9 +560,9 @@ export default function DashboardPage() {
   const rkT = grpAgg2(rkRows2).slice().sort((a, b) => rkDim2 === "流水" ? b.totalPaidAmt - a.totalPaidAmt : b.register - a.register).slice(0, 8);
   const rkC = [...rkRows].sort((a, b) => rkDim === "流水" ? b.totalPaidAmt - a.totalPaidAmt : b.register - a.register).slice(0, 8);
   return C.jsxs("div", {
-    className: "space-y-6",
+    className: "space-y-6 dc-core-dashboard",
     children: [C.jsxs(Ze, {
-      className: "w-full justify-between",
+      className: "w-full justify-between dc-core-toolbar",
       children: [C.jsx(hr, {
         title: C.jsxs(C.Fragment, {
           children: [C.jsx(Nr, {
@@ -621,14 +653,16 @@ export default function DashboardPage() {
           className: "ml-1"
         })]
       }), C.jsx(tt, {
-        gutter: [12, 12],
+        gutter: [16, 16],
+        className: "dc-core-metrics",
         children: joSt.map(h => {
           const x = h.v > h.y;
           return C.jsx(fe, {
-            xs: 12,
+            xs: 24,
             sm: 12,
             md: 6,
             children: C.jsxs("div", {
+              className: "dc-core-metric",
               style: {
                 background: "#fff",
                 border: `1px solid ${Zt.border}`,
@@ -667,25 +701,14 @@ export default function DashboardPage() {
                 className: "flex items-center justify-between flex-1",
                 children: [C.jsxs("span", {
                   style: {
-                    fontSize: 26,
+                    fontSize: 30,
                     fontWeight: 600,
                     color: Zt.t1
                   },
                   children: [h.u || "", h.uw ? h.v : xr(h.v), h.uw ? "万" : ""]
                 }), C.jsx("div", {
-                  style: {
-                    width: 32,
-                    height: 32,
-                    opacity: .85,
-                    background: h.t.includes("付费") ? "#e6a23c" : "#409eff",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 11,
-                    color: "#fff"
-                  },
-                  children: h.t[0]
+                  className: h.t.includes("付费") ? "dc-metric-icon dc-metric-icon-pay" : "dc-metric-icon",
+                  children: DCMetricIcon(h.t)
                 })]
               }), C.jsxs("div", {
                 style: {
@@ -716,7 +739,7 @@ export default function DashboardPage() {
           boxShadow: "0 1px 4px rgba(0,0,0,.06)"
         },
         children: [C.jsxs("div", {
-          className: "flex items-center justify-between mb-2",
+          className: "flex items-center justify-between mb-2 dc-core-section-toolbar",
           children: [C.jsx("span", {
             style: {
               fontSize: 15,
@@ -965,7 +988,7 @@ export default function DashboardPage() {
           boxShadow: "0 1px 4px rgba(0,0,0,.06)"
         },
         children: [C.jsxs("div", {
-          className: "flex items-center justify-between mb-2",
+          className: "flex items-center justify-between mb-2 dc-core-section-toolbar",
           children: [C.jsx("span", {
             style: {
               fontSize: 15,

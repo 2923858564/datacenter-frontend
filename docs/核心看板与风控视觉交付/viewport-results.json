@@ -1,0 +1,50 @@
+[
+  {
+    "document": 1440,
+    "icons": 8,
+    "mainClient": 1205,
+    "mainScroll": 1205,
+    "page": "core",
+    "viewport": 1440
+  },
+  {
+    "document": 1280,
+    "icons": 8,
+    "mainClient": 1045,
+    "mainScroll": 1045,
+    "page": "core",
+    "viewport": 1280
+  },
+  {
+    "document": 375,
+    "icons": 8,
+    "mainClient": 360,
+    "mainScroll": 360,
+    "page": "core",
+    "viewport": 375
+  },
+  {
+    "document": 1440,
+    "mainClient": 1205,
+    "mainScroll": 1205,
+    "page": "risk",
+    "selectedProject": "1",
+    "viewport": 1440
+  },
+  {
+    "document": 1280,
+    "mainClient": 1045,
+    "mainScroll": 1045,
+    "page": "risk",
+    "selectedProject": "1",
+    "viewport": 1280
+  },
+  {
+    "document": 375,
+    "mainClient": 360,
+    "mainScroll": 360,
+    "page": "risk",
+    "selectedProject": "1",
+    "viewport": 375
+  }
+]

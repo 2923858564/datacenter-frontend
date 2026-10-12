@@ -1,0 +1,266 @@
+diff --git a/main-app/index.html b/main-app/index.html
+index 3459242..57a388c 100644
+--- a/main-app/index.html
++++ b/main-app/index.html
+@@ -5,6 +5,8 @@
+     <link rel="icon" type="image/png" href="/logo.png" />
+     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+     <title>聚玩经营数据中台</title>
++    <link rel="stylesheet" href="/assets/focus-dashboard.css">
++    <script src="/__auth_gate__.js?surface=main"></script>
+     <script type="module" crossorigin src="/src/runtime/application.js"></script>
+   <script src="/ai-overview.js?v=20260923-ai-overview-template-v7"></script>
+ 
+diff --git a/main-app/src/pages/DashboardPage.js b/main-app/src/pages/DashboardPage.js
+index 93d0523..18d3511 100644
+--- a/main-app/src/pages/DashboardPage.js
++++ b/main-app/src/pages/DashboardPage.js
+@@ -1,5 +1,37 @@
+ import { $n, $t, As, C, Co, Dc, Dt, Go, IR0, Jt, Ke, Me, Mo, Mt, Nr, Pt, Qr, RP, St, To, Tq, Tr, Wt, Ze, Zt, __API__, aggM, bi, br, dcTableWithSort, dr, dt, en, er, fe, fetch, fn, ft, gi, grpAgg2, hr, jo, kn, ls, nn, tr, tt, xr, xt } from "../runtime/application.js";
+ 
++function DCMetricIcon(title) {
++  const paths = {
++    "新账号数": "M11 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0 M3 20v-2a4.5 4.5 0 0 1 4.5-4.5H9 M17 10v8 M13 14h8",
++    "新账号付费数": "M11 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0 M3 20v-2a4.5 4.5 0 0 1 4.5-4.5H9 M21 16.5a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0 M14.5 14.5l2 2 2-2 M16.5 16.5v2.5 M14.5 17h4 M18 3v5 M15.5 5.5h5",
++    "新账号付费总额": "M18 13a7.5 7.5 0 1 1-8-8 M7.5 10l3 3 3-3 M10.5 13v5 M8 14h5 M8 16h5 M19 3v6 M16 6h6",
++    "当月注册账号总数": "M8 3v4 M16 3v4 M3.5 9h17 M6 5h12a2.5 2.5 0 0 1 2.5 2.5v12A2.5 2.5 0 0 1 18 22H6a2.5 2.5 0 0 1-2.5-2.5v-12A2.5 2.5 0 0 1 6 5 M14 13.5a2 2 0 1 1-4 0 2 2 0 0 1 4 0 M8.5 19v-.5a3.5 3.5 0 0 1 7 0v.5",
++    "活跃账号数": "M11 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0 M3 20v-2a4.5 4.5 0 0 1 4.5-4.5H9 M12 17h2l2-4 2 7 2-3h2",
++    "账号付费数": "M11 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0 M3 20v-2a4.5 4.5 0 0 1 4.5-4.5H9 M21 16.5a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0 M14.5 14.5l2 2 2-2 M16.5 16.5v2.5 M14.5 17h4",
++    "账号付费总额": "M20 8V6a2 2 0 0 0-2-2H6a2.5 2.5 0 0 0 0 5h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2.5 2.5 0 0 1-2.5-2.5V6.5 M20 12h-5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h5 M17 14.5h.01",
++    "当月付费总额": "M8 3v4 M16 3v4 M3.5 9h17 M6 5h12a2.5 2.5 0 0 1 2.5 2.5v12A2.5 2.5 0 0 1 18 22H6a2.5 2.5 0 0 1-2.5-2.5v-12A2.5 2.5 0 0 1 6 5 M9 12l3 3 3-3 M12 15v5 M9.5 16h5 M9.5 18h5"
++  };
++  return C.jsx("svg", {
++    width: 24,
++    height: 24,
++    viewBox: "0 0 24 24",
++    fill: "none",
++    stroke: "currentColor",
++    strokeWidth: 1.5,
++    strokeLinecap: "round",
++    strokeLinejoin: "round",
++    "aria-hidden": true,
++    focusable: "false",
++    style: {
++      display: "block",
++      flexShrink: 0
++    },
++    children: C.jsx("path", {
++      d: paths[title]
++    })
++  });
++}
++
+ export default function DashboardPage() {
+   const [rptG, rptGSet] = Ke.useState("day"),
+     W = ft(h => h.packageType),
+@@ -528,9 +560,9 @@ export default function DashboardPage() {
+   const rkT = grpAgg2(rkRows2).slice().sort((a, b) => rkDim2 === "流水" ? b.totalPaidAmt - a.totalPaidAmt : b.register - a.register).slice(0, 8);
+   const rkC = [...rkRows].sort((a, b) => rkDim === "流水" ? b.totalPaidAmt - a.totalPaidAmt : b.register - a.register).slice(0, 8);
+   return C.jsxs("div", {
+-    className: "space-y-6",
++    className: "space-y-6 dc-core-dashboard",
+     children: [C.jsxs(Ze, {
+-      className: "w-full justify-between",
++      className: "w-full justify-between dc-core-toolbar",
+       children: [C.jsx(hr, {
+         title: C.jsxs(C.Fragment, {
+           children: [C.jsx(Nr, {
+@@ -621,14 +653,16 @@ export default function DashboardPage() {
+           className: "ml-1"
+         })]
+       }), C.jsx(tt, {
+-        gutter: [12, 12],
++        gutter: [16, 16],
++        className: "dc-core-metrics",
+         children: joSt.map(h => {
+           const x = h.v > h.y;
+           return C.jsx(fe, {
+-            xs: 12,
++            xs: 24,
+             sm: 12,
+             md: 6,
+             children: C.jsxs("div", {
++              className: "dc-core-metric",
+               style: {
+                 background: "#fff",
+                 border: `1px solid ${Zt.border}`,
+@@ -667,25 +701,14 @@ export default function DashboardPage() {
+                 className: "flex items-center justify-between flex-1",
+                 children: [C.jsxs("span", {
+                   style: {
+-                    fontSize: 26,
++                    fontSize: 30,
+                     fontWeight: 600,
+                     color: Zt.t1
+                   },
+                   children: [h.u || "", h.uw ? h.v : xr(h.v), h.uw ? "万" : ""]
+                 }), C.jsx("div", {
+-                  style: {
+-                    width: 32,
+-                    height: 32,
+-                    opacity: .85,
+-                    background: h.t.includes("付费") ? "#e6a23c" : "#409eff",
+-                    borderRadius: "50%",
+-                    display: "flex",
+-                    alignItems: "center",
+-                    justifyContent: "center",
+-                    fontSize: 11,
+-                    color: "#fff"
+-                  },
+-                  children: h.t[0]
++                  className: h.t.includes("付费") ? "dc-metric-icon dc-metric-icon-pay" : "dc-metric-icon",
++                  children: DCMetricIcon(h.t)
+                 })]
+               }), C.jsxs("div", {
+                 style: {
+@@ -716,7 +739,7 @@ export default function DashboardPage() {
+           boxShadow: "0 1px 4px rgba(0,0,0,.06)"
+         },
+         children: [C.jsxs("div", {
+-          className: "flex items-center justify-between mb-2",
++          className: "flex items-center justify-between mb-2 dc-core-section-toolbar",
+           children: [C.jsx("span", {
+             style: {
+               fontSize: 15,
+@@ -965,7 +988,7 @@ export default function DashboardPage() {
+           boxShadow: "0 1px 4px rgba(0,0,0,.06)"
+         },
+         children: [C.jsxs("div", {
+-          className: "flex items-center justify-between mb-2",
++          className: "flex items-center justify-between mb-2 dc-core-section-toolbar",
+           children: [C.jsx("span", {
+             style: {
+               fontSize: 15,
+diff --git a/main-app/src/styles/focus-dashboard.css b/main-app/src/styles/focus-dashboard.css
+new file mode 100644
+index 0000000..0a54af3
+--- /dev/null
++++ b/main-app/src/styles/focus-dashboard.css
+@@ -0,0 +1,93 @@
++.dc-core-dashboard, #dc-hero-risk-root {
++  --focus-text: #1d2129;
++  --focus-secondary: #4e5969;
++  --focus-border: #e5e6eb;
++  --focus-surface: #fff;
++  --focus-page: #f2f3f5;
++  --focus-subtle: #f5f6f8;
++  color: var(--focus-text);
++  font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
++  font-variant-numeric: tabular-nums;
++  min-width: 0;
++}
++.dc-core-dashboard > * { min-width: 0; }
++.dc-core-dashboard.space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 16px; }
++.dc-core-toolbar, .dc-core-section-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
++.dc-core-section-toolbar > .ant-space { flex-wrap: wrap; justify-content: flex-end; gap: 8px !important; }
++.dc-core-section-toolbar > span { flex-shrink: 0; }
++.dc-core-dashboard .dc-core-metric { border-radius: 8px !important; padding: 16px !important; min-height: 144px !important; gap: 8px !important; }
++.dc-core-metric > div:first-child > span { font-size: 14px !important; color: var(--focus-secondary) !important; }
++.dc-core-metric > div:nth-child(2), .dc-core-metric > div:last-child { color: var(--focus-secondary) !important; font-size: 12px !important; }
++.dc-core-metric > div:nth-child(3) { gap: 8px; }
++.dc-core-metric > div:nth-child(3) > span { font-variant-numeric: tabular-nums; letter-spacing: -.5px; overflow-wrap: anywhere; }
++.dc-metric-icon { width: 40px; height: 40px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #1677ff; background: #eaf3ff; }
++.dc-metric-icon-pay { color: #a96909; background: #fff5dc; }
++.dc-core-dashboard .text-gray-400 { color: var(--focus-secondary); }
++.dc-core-dashboard .ant-table-wrapper { max-width: 100%; overflow-x: auto; }
++.dc-core-dashboard .ant-table { min-width: 1160px; font-variant-numeric: tabular-nums; }
++.dc-core-dashboard .ant-table-thead th { white-space: nowrap; background: var(--focus-subtle) !important; }
++.dc-core-dashboard .ant-table-tbody td:not(:first-child):not(:nth-child(2)) { text-align: right; }
++.dc-core-dashboard .ant-table-tbody td { white-space: nowrap; }
++.dc-core-dashboard .ant-card { border-radius: 8px; border-color: var(--focus-border); }
++.dc-core-dashboard .ant-space { flex-wrap: wrap; max-width: 100%; }
++.dc-core-dashboard .ant-picker, .dc-core-dashboard .ant-select { max-width: 100%; }
++#dc-hero-risk-root { padding: 16px !important; background: var(--focus-page) !important; }
++#dc-hero-risk-root .dc-hr-head { margin: 0; padding: 24px; background: var(--focus-surface); border-radius: 8px 8px 0 0; }
++#dc-hero-risk-root .dc-hr-sub, #dc-hero-risk-root .hint, #dc-hero-risk-root .dc-pro-section-title small { color: var(--focus-secondary); }
++#dc-hero-risk-root .dc-pro-filter { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px; padding: 16px; border-radius: 0 0 8px 8px; }
++#dc-hero-risk-root .dc-pro-filter > label { flex: 1 1 160px; min-width: 0; }
++#dc-hero-risk-root .dc-pro-filter > .dc-period-field { flex: 1 1 280px; min-width: 0; }
++#dc-hero-risk-root .dc-pro-filter .dc-period-picker { width: 100%; min-width: 0; }
++#dc-hero-risk-root .dc-pro-filter-state { flex: 1 1 200px; }
++#dc-hero-risk-root .dc-pro-filter > button { flex: 0 0 auto; width: auto; min-width: 80px; white-space: nowrap; height: 36px; padding: 0 16px; }
++#dc-hero-risk-root .dc-pro-filter > label select { width: 100%; }
++#dc-hero-risk-root .dc-pro-filter .dc-date-range-trigger { max-width: 100%; }
++#dc-hero-risk-root .dc-pro-notice { margin-inline: 0; }
++#dc-hero-risk-root .dc-risk-feed { overflow-x: auto; }
++#dc-hero-risk-root .dc-risk-feed-columns, #dc-hero-risk-root .dc-risk-feed-window { min-width: 720px; }
++#dc-hero-risk-root .dc-pro-section { margin-top: 16px; }
++#dc-hero-risk-root .dc-hr-card { border-radius: 8px; border-color: var(--focus-border); }
++#dc-hero-risk-root .dc-hr-metric .value { font-size: 30px; font-weight: 600; font-variant-numeric: tabular-nums; }
++#dc-hero-risk-root .dc-pro-table-wrap, #dc-hero-risk-root .dc-inline-detail-scroll { max-width: 100%; overflow: auto; }
++#dc-hero-risk-root .dc-pro-table th, #dc-hero-risk-root .dc-detail-table th { white-space: nowrap; background: var(--focus-subtle); }
++#dc-hero-risk-root .num { text-align: right; font-variant-numeric: tabular-nums; }
++#dc-hero-risk-root .dc-pro-empty { min-height: 240px; color: var(--focus-secondary); border-color: var(--focus-border); border-radius: 8px; }
++@media (max-width: 1100px) {
++  .dc-core-dashboard .dc-core-metrics > .ant-col { flex: 0 0 50%; max-width: 50%; }
++  #dc-hero-risk-root .dc-risk-overview-layout, #dc-hero-risk-root .dc-analysis-pair { grid-template-columns: minmax(0, 1fr); }
++}
++@media (max-width: 640px) {
++  .ant-layout:has(.dc-core-dashboard), .ant-layout:has(#dc-hero-risk-root) { min-width: 0; }
++  .ant-layout:has(> .ant-layout-content .dc-core-dashboard), .ant-layout:has(> .ant-layout-content #dc-hero-risk-root) { flex-direction: column; }
++  .ant-layout:has(.dc-core-dashboard) > .ant-layout-sider, .ant-layout:has(#dc-hero-risk-root) > .ant-layout-sider { width: 100% !important; max-width: 100% !important; min-width: 0 !important; flex: none !important; }
++  .ant-layout-sider:has(~ main .dc-core-dashboard) .ant-menu, .ant-layout-sider:has(~ main #dc-hero-risk-root) .ant-menu { display: flex; overflow-x: auto; }
++  .ant-layout-sider:has(~ main .dc-core-dashboard) .ant-menu-item, .ant-layout-sider:has(~ main #dc-hero-risk-root) .ant-menu-item { width: auto; flex: 0 0 auto; white-space: nowrap; }
++  .ant-layout-content:has(.dc-core-dashboard), .ant-layout-content:has(#dc-hero-risk-root) { padding: 8px !important; min-width: 0; width: 100% !important; }
++  .ant-layout:has(.dc-core-dashboard) > .ant-layout-header, .ant-layout:has(#dc-hero-risk-root) > .ant-layout-header { padding: 0 8px !important; }
++  .ant-layout-header:has(~ .ant-layout .dc-core-dashboard) > div, .ant-layout-header:has(~ .ant-layout #dc-hero-risk-root) > div { min-width: 0; }
++  .ant-layout-header:has(~ .ant-layout .dc-core-dashboard) > div:first-child, .ant-layout-header:has(~ .ant-layout #dc-hero-risk-root) > div:first-child { flex: 1; }
++  .ant-layout-header:has(~ .ant-layout .dc-core-dashboard) > div:first-child > div, .ant-layout-header:has(~ .ant-layout #dc-hero-risk-root) > div:first-child > div { flex-shrink: 0; white-space: nowrap; margin-right: 8px; }
++  body:has(.dc-core-dashboard) #dc-lc-chat-entry, body:has(#dc-hero-risk-root) #dc-lc-chat-entry { top: auto !important; bottom: 16px; right: 16px !important; }
++  body:has(.dc-core-dashboard) #dc-data-scope-switch, body:has(#dc-hero-risk-root) #dc-data-scope-switch { top: 104px !important; right: 16px !important; }
++  .ant-layout-header:has(~ .ant-layout .dc-core-dashboard) .ant-menu, .ant-layout-header:has(~ .ant-layout #dc-hero-risk-root) .ant-menu { min-width: 0 !important; width: 0 !important; flex: 1; }
++  .ant-layout-header:has(~ .ant-layout .dc-core-dashboard) > div:first-child > span, .ant-layout-header:has(~ .ant-layout #dc-hero-risk-root) > div:first-child > span { white-space: nowrap; flex-shrink: 0; }
++  .ant-layout-header:has(~ .ant-layout .dc-core-dashboard) > .ant-space, .ant-layout-header:has(~ .ant-layout #dc-hero-risk-root) > .ant-space { padding-left: 0 !important; flex-shrink: 0; }
++  .dc-core-dashboard .dc-core-metrics > .ant-col { flex: 0 0 100%; max-width: 100%; }
++  body:has(.dc-core-dashboard) header.ant-layout-header > div.flex.items-center.gap-1:first-child > ul.ant-menu, body:has(#dc-hero-risk-root) header.ant-layout-header > div.flex.items-center.gap-1:first-child > ul.ant-menu { min-width: 0 !important; width: 0 !important; flex: 1 1 auto !important; }
++  .dc-core-toolbar { align-items: flex-start; padding-top: 40px; }
++  .dc-core-toolbar > .ant-space-item:first-child { flex: 1 1 100%; }
++  .dc-core-toolbar > .ant-space-item:first-child .ant-space { flex-wrap: wrap; }
++  .dc-core-toolbar .text-xl { white-space: nowrap; }
++  .dc-core-section-toolbar { align-items: flex-start; flex-direction: column; }
++  .dc-core-section-toolbar > .ant-space { justify-content: flex-start; width: 100%; }
++  .dc-core-dashboard .ant-space-item { min-width: 0; max-width: 100%; }
++  .dc-core-dashboard .ant-card-extra { max-width: 100%; }
++  #dc-hero-risk-root { padding: 48px 8px 8px !important; }
++  #dc-hero-risk-root .dc-hr-head { padding: 16px; }
++  #dc-hero-risk-root .dc-pro-filter { gap: 8px; }
++  #dc-hero-risk-root .dc-pro-filter > label, #dc-hero-risk-root .dc-pro-filter > .dc-period-field { flex-basis: 100%; }
++  #dc-hero-risk-root .dc-pro-section-title { flex-wrap: wrap; gap: 8px; }
++  #dc-hero-risk-root .dc-risk-overview-metrics { grid-template-columns: minmax(0, 1fr); }
++  #dc-hero-risk-root .dc-hr-grid > * { min-width: 0; }
++  #dc-hero-risk-root .dc-risk-queue-body { grid-template-columns: minmax(0, 1fr); }
++}
+diff --git a/main-app/vite.config.js b/main-app/vite.config.js
+index 234ec0f..c02b75e 100644
+--- a/main-app/vite.config.js
++++ b/main-app/vite.config.js
+@@ -39,6 +39,7 @@ export default defineConfig({
+           resources.set("/" + prefix + file, path.join(root, directory, file));
+         }
+       }
++      resources.set("/risk-control-prototype-source.js", path.join(root, "src/extensions/risk-control-prototype.js"));
+       server.middlewares.use(async (req, res, next) => {
+         const pathname = (req.url || "").split("?")[0];
+         if (pathname.startsWith("/api/") && !process.env.DC_API_TARGET) {
+@@ -54,6 +55,7 @@ export default defineConfig({
+       });
+     },
+     async generateBundle(_options, bundle) {
++      this.emitFile({ type: "asset", fileName: "risk-control-prototype-source.js", source: await readFile(path.join(root, "src/extensions/risk-control-prototype.js")) });
+       for (const [directory, prefix] of sourceRoots) {
+         for (const file of await files(path.join(root, directory))) {
+           if (!bundle[prefix + file]) this.emitFile({ type: "asset", fileName: prefix + file, source: await readFile(path.join(root, directory, file)) });
+diff --git a/scripts/preview.mjs b/scripts/preview.mjs
+index ba5ab28..0c341a0 100644
+--- a/scripts/preview.mjs
++++ b/scripts/preview.mjs
+@@ -43,6 +43,9 @@ const server = http.createServer(async (req, res) => {
+   let file = isConsole ? await existing(consoleDist, 'system.html') : null;
+   if (isConsole && !file) return json(res, 503, '请先执行 npm run build');
+   const relative = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
++  if (pathname === '/__auth_gate__.js' && new URL(req.url, 'http://localhost').searchParams.get('surface') === 'main') {
++    file ||= await existing(mainDist, relative);
++  }
+   file ||= await existing(consoleDist, relative);
+   file ||= await existing(mainDist, relative);
+   if (!file && !path.extname(pathname)) file = await existing(mainDist, 'index.html');

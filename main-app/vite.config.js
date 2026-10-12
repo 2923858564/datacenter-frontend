@@ -39,6 +39,7 @@ export default defineConfig({
           resources.set("/" + prefix + file, path.join(root, directory, file));
         }
       }
+      resources.set("/risk-control-prototype-source.js", path.join(root, "src/extensions/risk-control-prototype.js"));
       server.middlewares.use(async (req, res, next) => {
         const pathname = (req.url || "").split("?")[0];
         if (pathname.startsWith("/api/") && !process.env.DC_API_TARGET) {
@@ -54,6 +55,7 @@ export default defineConfig({
       });
     },
     async generateBundle(_options, bundle) {
+      this.emitFile({ type: "asset", fileName: "risk-control-prototype-source.js", source: await readFile(path.join(root, "src/extensions/risk-control-prototype.js")) });
       for (const [directory, prefix] of sourceRoots) {
         for (const file of await files(path.join(root, directory))) {
           if (!bundle[prefix + file]) this.emitFile({ type: "asset", fileName: prefix + file, source: await readFile(path.join(root, directory, file)) });
