@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>工单中心</title>
+  <link rel="stylesheet" href="/work-orders.css?v=20260908">
+</head>
+<body>
+  <main class="page">
+    <header class="page-head">
+      <div><h1 id="pageTitle">工单中心</h1><p>引入、维护、复用、AI转人工工单统一流转</p></div>
+      <div><a id="gradingLink" class="button hidden" href="/admin/dictionary?view=workorders" target="_top">工单分级配置</a> <button id="createButton" class="button primary hidden">新建工单</button></div>
+    </header>
+
+    <nav class="tabs" aria-label="工单页面">
+      <button data-view="pending">工单待办 <span id="pendingCount" class="badge">0</span></button>
+      <button data-view="pool">公共工单池 <span id="poolCount" class="badge">0</span></button>
+      <button data-view="mine">我的工单</button>
+      <button id="manageTab" data-view="manage" class="hidden">工单管理</button>
+    </nav>
+
+    <section class="summary" id="summary"></section>
+
+    <section class="panel">
+      <div class="filters">
+        <select id="typeFilter" aria-label="工单类型">
+          <option value="">全部类型</option>
+          <option value="INTRODUCTION">引入</option>
+          <option value="MAINTENANCE">维护</option>
+          <option value="REUSE">复用</option>
+          <option value="AI_HANDOFF">AI转人工</option>
+        </select>
+        <select id="statusFilter" aria-label="工单状态">
+          <option value="">全部状态</option>
+          <option value="PENDING">待处理</option>
+          <option value="ASSIGNED">处理中</option>
+          <option value="POOL">公共池</option>
+          <option value="COMPLETED">已完成</option>
+          <option value="CANCELLED">已取消</option>
+        </select>
+        <input id="keywordFilter" placeholder="搜索工单号、玩家、项目或角色ID">
+        <button id="searchButton" class="button">查询</button>
+        <button id="refreshButton" class="button ghost">刷新</button>
+      </div>
+
+      <div id="message" class="message hidden"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>工单号</th><th>类型</th><th>玩家/项目</th><th>区服/角色ID</th>
+            <th>状态</th><th>负责人</th><th id="assignedHeader" class="hidden">指派时间</th><th id="processingHeader" class="hidden">最新处理情况</th><th>SLA</th><th>创建时间</th><th class="actions-col">操作</th>
+          </tr></thead>
+          <tbody id="orderRows"></tbody>
+        </table>
+        <div id="empty" class="empty hidden">暂无工单</div>
+      </div>
+      <footer class="pager">
+        <span id="totalText">共 0 条</span>
+        <div><button id="prevButton" class="button ghost">上一页</button><span id="pageText">1 / 1</span><button id="nextButton" class="button ghost">下一页</button></div>
+      </footer>
+    </section>
+  </main>
+
+  <dialog id="detailDialog" class="dialog"><div id="detailContent"></div></dialog>
+  <dialog id="playerDialog" class="dialog">
+    <div class="dialog-head"><h2>关联玩家</h2><button type="button" class="icon-button" data-close>×</button></div>
+    <form id="playerSearch" class="form-grid">
+      <label>角色ID<input name="role_id" maxlength="100"></label>
+      <label>角色名<input name="role_name" maxlength="100"></label>
+      <div class="full"><button type="submit" class="button primary">查询</button> <button type="reset" class="button ghost">重置</button></div>
+    </form>
+    <div id="playerResults" class="detail-body">等待查询</div>
+  </dialog>
+  <dialog id="followUpDialog" class="dialog">
+    <form id="followUpForm" method="dialog">
+      <div class="dialog-head"><h2>记录处理情况</h2><button type="button" class="icon-button" data-close>×</button></div>
+      <div class="form-grid"><label class="full">处理情况<textarea name="remark" rows="5" maxlength="500" required placeholder="填写本次处理内容、当前进展或处理结果"></textarea></label></div>
+      <div class="dialog-actions"><button type="button" class="button ghost" data-close>取消</button><button type="submit" class="button primary">保存记录</button></div>
+    </form>
+  </dialog>
+  <dialog id="createDialog" class="dialog">
+    <form id="createForm" method="dialog">
+      <div class="dialog-head"><h2>新建工单</h2><button type="button" class="icon-button" data-close>×</button></div>
+      <div class="form-grid">
+        <label>工单类型<select name="order_type" required><option value="INTRODUCTION">引入</option><option value="MAINTENANCE">维护</option><option value="REUSE">复用</option></select></label>
+        <label>工单标题<input name="title" maxlength="100" required></label>
+        <label>玩家名<input name="player_name" maxlength="100"></label>
+        <label>玩家ID<input name="player_id" maxlength="100"></label>
+        <label>项目名<input name="project_name" maxlength="100"></label>
+        <label>区服<input name="server_name" maxlength="100"></label>
+        <label>角色ID<input name="role_id" maxlength="100"></label>
+        <label>星级<select name="star_level"><option value="">未设置</option><option value="S">S</option><option value="one">一星</option><option value="two">二星</option><option value="three">三星</option><option value="four">四星</option><option value="five_star">五星</option></select></label>
+        <label>SLA时限（小时）<input name="sla_hours" type="number" min="1" max="720" value="24" required></label>
+        <label>指派人（留空进公共池）<select name="assignee_id" id="createAssignee"><option value="">公共池</option></select></label>
+        <label class="full">工单描述<textarea name="description" maxlength="1000" rows="3"></textarea></label>
+      </div>
+      <div class="dialog-actions"><button type="button" class="button ghost" data-close>取消</button><button type="submit" class="button primary">创建</button></div>
+    </form>
+  </dialog>
+  <dialog id="assignDialog" class="dialog small-dialog">
+    <form id="assignForm" method="dialog">
+      <div class="dialog-head"><h2>指派工单</h2><button type="button" class="icon-button" data-close>×</button></div>
+      <div class="form-stack">
+        <label>接单人<select name="target_user_id" id="assignAssignee" required></select></label>
+        <label>指派说明<textarea name="reason" maxlength="500" rows="3" placeholder="可留空"></textarea></label>
+      </div>
+      <div class="dialog-actions"><button type="button" class="button ghost" data-close>取消</button><button type="submit" class="button primary">确认指派</button></div>
+    </form>
+  </dialog>
+  <script src="/work-orders.js?v=20260911-player-grading"></script>
+</body>
+</html>

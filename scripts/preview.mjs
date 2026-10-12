@@ -6,8 +6,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
-const web = path.join(root, "web");
 const consoleDist = path.join(root, "system-console", "dist");
+const mainDist = path.join(root, "main-app", "dist");
 const target = process.env.DC_API_TARGET ? new URL(process.env.DC_API_TARGET) : null;
 if (target && (!['http:', 'https:'].includes(target.protocol) || target.username || target.password)) {
   throw new Error("DC_API_TARGET must be an HTTP(S) URL without embedded credentials");
@@ -44,8 +44,8 @@ const server = http.createServer(async (req, res) => {
   if (isConsole && !file) return json(res, 503, '请先执行 npm run build');
   const relative = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
   file ||= await existing(consoleDist, relative);
-  file ||= await existing(web, relative);
-  if (!file && !path.extname(pathname)) file = await existing(web, 'index.html');
+  file ||= await existing(mainDist, relative);
+  if (!file && !path.extname(pathname)) file = await existing(mainDist, 'index.html');
   if (!file) return json(res, 404, 'Resource not found');
   res.writeHead(200, { 'Content-Type': mime[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
   if (req.method === 'HEAD') return res.end();

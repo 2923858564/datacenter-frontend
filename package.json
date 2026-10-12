@@ -4,9 +4,14 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "setup": "npm ci --prefix system-console",
-    "build": "npm run build --prefix system-console",
+    "setup": "npm ci --prefix system-console && npm ci --prefix main-app && npm ci --prefix channel-detail",
+    "build": "npm run build:main && npm run build:console && npm run build:channel",
     "dev": "npm run dev --prefix system-console",
-    "preview": "node scripts/preview.mjs"
+    "preview": "node scripts/preview.mjs",
+    "build:main": "npm run build --prefix main-app",
+    "build:console": "npm run build --prefix system-console",
+    "build:channel": "npm run build --prefix channel-detail",
+    "dev:main": "npm run dev --prefix main-app",
+    "dev:console": "npm run dev --prefix system-console"
   }
 }

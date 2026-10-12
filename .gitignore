@@ -1,6 +1,9 @@
 node_modules/
 system-console/dist/
 system-console/dist-dictionary/
+main-app/dist/
+channel-detail/dist/
+reference/main-20260808/dist/
 .env
 .env.*
 *.log

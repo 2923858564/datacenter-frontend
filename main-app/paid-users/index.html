@@ -1,0 +1,1279 @@
+<!doctype html>
+<html lang="zh-CN" data-paid-auth="loading">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f7fb">
+  <title>付费用户覆盖 · 用户池</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page-bg: #f4f7fb;
+      --surface: #fff;
+      --line: #e5eaf1;
+      --line-soft: #eef1f5;
+      --text: #1d2939;
+      --muted: #7a8699;
+      --muted-strong: #536174;
+      --primary: #1677ff;
+      --primary-soft: #eaf3ff;
+      --success: #16845b;
+      --success-soft: #e9f7f1;
+      --warning: #b76b08;
+      --warning-soft: #fff6e5;
+      --shadow: 0 2px 10px rgba(15, 35, 65, .04);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-width: 0; margin: 0; }
+    body {
+      background: var(--page-bg);
+      color: var(--text);
+      font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    }
+    button, input, select { font: inherit; }
+    button { color: inherit; }
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 2px solid rgba(22, 119, 255, .7);
+      outline-offset: 2px;
+    }
+
+    .brc-page {
+      width: 100%;
+      max-width: 1560px;
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 20px 24px 32px;
+    }
+    .brc-heading {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 14px;
+    }
+    .brc-breadcrumb {
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: .01em;
+    }
+    .brc-heading h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 650;
+      line-height: 1.4;
+    }
+    .brc-heading p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .brc-source-status {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      max-width: min(44vw, 560px);
+      padding: 5px 11px;
+      border: 1px solid #f2dfb7;
+      border-radius: 7px;
+      background: #fffaf0;
+      color: #785016;
+      font-size: 12px;
+      line-height: 1.4;
+      white-space: normal;
+    }
+    .brc-source-status::before {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #e2a23b;
+      content: "";
+    }
+
+    .brc-tabs {
+      display: flex;
+      gap: 24px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 16px;
+      scrollbar-width: thin;
+    }
+    .brc-tabs .brc-tab-item {
+      position: relative;
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      border: 0;
+      background: transparent;
+      padding: 10px 2px 12px;
+      color: #667085;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .brc-tabs .brc-tab-item[aria-current="page"] {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .brc-tabs .brc-tab-item[aria-current="page"]::after {
+      position: absolute;
+      right: 0;
+      bottom: -1px;
+      left: 0;
+      height: 2px;
+      border-radius: 2px;
+      background: var(--primary);
+      content: "";
+    }
+    .brc-tab-utility {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      margin: 0 0 6px auto;
+      border: 1px solid #d6e6ff;
+      border-radius: 6px;
+      background: #f7fbff;
+      padding: 5px 10px;
+      color: var(--primary);
+      font-size: 12px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .brc-tab-utility:hover { background: var(--primary-soft); }
+
+    .brc-panel {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    #summaryCards {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(280px, 1fr);
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    #summaryCards > :not(.coverage-hero):not(.summary-support) {
+      min-width: 0;
+      min-height: 86px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--surface);
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+    }
+    #summaryCards .summary-card-label,
+    #summaryCards .brc-metric-label {
+      display: block;
+      margin: 0 0 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 400;
+    }
+    #summaryCards .summary-card-value,
+    #summaryCards .brc-metric-value {
+      display: block;
+      color: var(--text);
+      font-size: 22px;
+      font-weight: 650;
+      line-height: 1.35;
+    }
+    #summaryCards .summary-card-hint {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .coverage-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 16px;
+      min-width: 0;
+      min-height: 146px;
+      border: 1px solid #d8e7fb;
+      border-radius: 10px;
+      background: linear-gradient(115deg, #fff 38%, #f3f8ff 100%);
+      padding: 15px 20px;
+      box-shadow: var(--shadow);
+    }
+    .coverage-hero-label,
+    .coverage-hero .summary-card-label {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted-strong);
+      font-size: 13px;
+    }
+    .coverage-hero .coverage-hero-value {
+      display: block;
+      color: var(--primary);
+      font-size: clamp(34px, 3vw, 42px);
+      font-weight: 700;
+      line-height: 1.12;
+      letter-spacing: -.035em;
+    }
+    .coverage-hero-count {
+      margin-top: 7px;
+      color: #344054;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.45;
+    }
+    .coverage-hero-count button {
+      border: 0;
+      background: transparent;
+      padding: 0;
+      color: var(--primary);
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .coverage-hero-count strong { color: var(--text); font-size: inherit; font-weight: 700; }
+    .coverage-hero .summary-card-hint,
+    .coverage-hero small { color: var(--muted); font-size: 12px; }
+    .coverage-ring {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 116px;
+      height: 116px;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: conic-gradient(var(--primary) var(--coverage-percent, 0%), #e8edf4 0);
+    }
+    .coverage-ring::before {
+      position: absolute;
+      inset: 8px;
+      border-radius: inherit;
+      background: #fff;
+      content: "";
+    }
+    .coverage-ring > * { position: relative; z-index: 1; }
+    .coverage-ring strong {
+      color: var(--primary);
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -.03em;
+    }
+    .coverage-ring span { margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .summary-support {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-content: stretch;
+      gap: 10px;
+      min-width: 0;
+    }
+    .summary-support > * {
+      min-width: 0;
+      min-height: 68px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--surface);
+      padding: 9px 12px;
+    }
+    .summary-support .summary-support-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-content: start;
+      gap: 2px 8px;
+      width: 100%;
+      cursor: pointer;
+      font: inherit;
+      text-align: left;
+    }
+    .summary-support .summary-support-item:hover { border-color: #c8dcf8; background: #f8fbff; }
+    .summary-support .summary-support-item:focus-visible { outline: 2px solid rgba(22, 119, 255, .7); outline-offset: 2px; }
+    .summary-support .summary-support-label {
+      grid-column: 1 / -1;
+      display: block;
+      min-width: 0;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 12px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .summary-support .summary-support-value {
+      display: block;
+      color: var(--text);
+      font-size: 20px;
+      font-weight: 650;
+      line-height: 1.2;
+    }
+    .summary-support .summary-support-link {
+      align-self: center;
+      color: var(--primary);
+      font-size: 10px;
+      white-space: nowrap;
+    }
+    .summary-support small,
+    .summary-support .summary-card-hint { grid-column: 1 / -1; color: var(--muted); font-size: 10px; line-height: 1.3; }
+    .summary-support-item[data-detail-status="yes"] .summary-support-value { color: var(--success); }
+    .summary-support-item[data-detail-status="no"] .summary-support-value { color: #667085; }
+    .summary-support-item[data-detail-status="unknown"] .summary-support-value { color: var(--warning); }
+    .brc-coverage-statuses {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px 12px;
+      margin-top: 12px;
+    }
+    .brc-coverage-statuses > * {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border-radius: 6px;
+      background: #f7f9fc;
+      padding: 5px 8px;
+      color: #536174;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    .brc-coverage-statuses .is-covered { background: var(--success-soft); color: var(--success); }
+    .brc-coverage-statuses .is-uncovered { background: #f1f3f6; color: #667085; }
+    .brc-coverage-statuses .is-pending { background: var(--warning-soft); color: var(--warning); }
+    .brc-coverage-statuses strong { color: inherit; font-size: 12px; letter-spacing: 0; }
+    .brc-inline-action {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      justify-content: center;
+      min-height: 30px;
+      border: 1px solid #c9defa;
+      border-radius: 6px;
+      background: #f6faff;
+      padding: 4px 10px;
+      color: var(--primary);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .brc-inline-action:hover { border-color: #9ec7ff; background: var(--primary-soft); }
+    .brc-ranking-section .brc-section-head { flex-wrap: wrap; align-items: center; }
+
+    .brc-toolbar {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 14px;
+      padding: 0;
+    }
+    .brc-filters {
+      display: grid;
+      grid-template-columns: minmax(250px, 1.65fr) repeat(4, minmax(120px, 1fr));
+      flex: 1 1 auto;
+      align-items: flex-end;
+      gap: 12px;
+      min-width: 0;
+    }
+    .brc-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      min-width: 0;
+    }
+    .brc-field label, .brc-control-label {
+      color: #5d6b7e;
+      font-size: 12px;
+    }
+    .brc-field select, .brc-field input {
+      width: 100%;
+      height: 34px;
+      min-width: 0;
+      border: 1px solid #d7dee8;
+      border-radius: 6px;
+      background: #fff;
+      padding: 0 10px;
+      color: var(--text);
+    }
+    .brc-field select:focus, .brc-field input:focus {
+      border-color: var(--primary);
+      outline: 0;
+      box-shadow: 0 0 0 2px rgba(22, 119, 255, .1);
+    }
+    .brc-field-group { flex: 0 1 180px; }
+    .brc-field-project { flex: 0 1 180px; }
+    .brc-field-tier { flex: 0 1 164px; }
+    .brc-field-staff { flex: 0 1 220px; }
+    .brc-date-range { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto; align-items: center; gap: 5px; }
+    .brc-date-range input { width: 100%; min-width: 0; height: 34px; border: 1px solid #d7dee8; border-radius: 6px; background: #fff; padding: 0 6px; color: var(--text); font-size: 11px; }
+    .brc-date-range span { color: var(--muted); font-size: 11px; }
+    .brc-date-reset { height: 34px; border: 1px solid #d7dee8; border-radius: 6px; background: #fff; padding: 0 8px; color: #536174; cursor: pointer; font-size: 11px; white-space: nowrap; }
+    .brc-date-reset:hover { border-color: #9ec7ff; color: var(--primary); }
+    #dateRangeHint { color: var(--muted); font-size: 10px; line-height: 1.35; }
+    #dateRangeHint.is-error { color: #c2413a; }
+    .brc-dimension {
+      flex: 0 0 auto;
+      min-width: 0;
+    }
+    .brc-control-label { display: block; margin-bottom: 5px; }
+    #dimensionTabs {
+      display: inline-flex;
+      min-height: 34px;
+      border: 1px solid #d7dee8;
+      border-radius: 7px;
+      background: #f7f9fc;
+      padding: 3px;
+    }
+    #dimensionTabs button {
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      padding: 0 12px;
+      color: #667085;
+      cursor: pointer;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    #dimensionTabs button:hover { color: var(--primary); }
+    #dimensionTabs button.active,
+    #dimensionTabs button[aria-pressed="true"] {
+      background: #fff;
+      color: var(--primary);
+      font-weight: 600;
+      box-shadow: 0 1px 3px rgba(15, 35, 65, .12);
+    }
+
+    .brc-ranking-title { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 18px; }
+    .brc-analysis { overflow: hidden; }
+    .brc-analysis-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--line-soft);
+      padding: 16px 18px 13px;
+    }
+    .brc-analysis-head h2, .brc-section-head h3 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .brc-analysis-head p, .brc-section-head p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .brc-legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 12px;
+      color: #667085;
+      font-size: 11px;
+    }
+    .brc-legend span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+    .brc-legend i { width: 8px; height: 8px; border-radius: 2px; }
+    .brc-legend .covered i { background: var(--primary); }
+    .brc-legend .uncovered i { background: #c7d1df; }
+    .brc-legend .pending i { background: #e5a53a; }
+
+    .brc-analysis-grid {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+      gap: 0;
+    }
+    .brc-chart-section, .brc-ranking-section { min-width: 0; padding: 16px 18px 17px; }
+    .brc-chart-section { border-right: 1px solid var(--line-soft); }
+    .brc-section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+    #coverageChart {
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+      min-height: 272px;
+      min-width: 0;
+    }
+    .brc-empty {
+      display: grid;
+      min-height: 190px;
+      place-items: center;
+      color: #98a2b3;
+      font-size: 12px;
+      text-align: center;
+    }
+    .brc-chart-scale {
+      display: flex;
+      justify-content: space-between;
+      margin: -4px 0 2px 116px;
+      color: #98a2b3;
+      font-size: 10px;
+    }
+    .brc-coverage-row {
+      display: grid;
+      grid-template-columns: minmax(74px, 102px) minmax(0, 1fr);
+      align-items: center;
+      column-gap: 12px;
+      row-gap: 5px;
+      min-width: 0;
+    }
+    .brc-coverage-name, .coverage-name, .coverage-label {
+      overflow: hidden;
+      color: #344054;
+      font-size: 12px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .brc-coverage-track, .coverage-track, .coverage-bar {
+      display: flex;
+      overflow: hidden;
+      height: 9px;
+      border-radius: 8px;
+      background: #edf1f6;
+    }
+    .brc-coverage-segment, .coverage-segment { min-width: 0; height: 100%; }
+    .brc-coverage-segment.is-covered, .coverage-segment-covered { background: var(--primary); }
+    .brc-coverage-segment.is-uncovered, .coverage-segment-uncovered { background: #c7d1df; }
+    .brc-coverage-segment.is-pending, .coverage-segment-pending { background: #e5a53a; }
+    .brc-coverage-meta, .coverage-meta {
+      grid-column: 2;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 10px;
+      white-space: nowrap;
+    }
+    .brc-coverage-meta strong, .coverage-meta strong { color: var(--muted-strong); font-weight: 600; }
+
+    .brc-ranking-section { min-width: 0; }
+    .brc-ranking-section .brc-section-head { align-items: flex-end; }
+    .brc-table-wrap {
+      width: 100%;
+      min-width: 0;
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+    .brc-ranking-table {
+      width: 100%;
+      min-width: 470px;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 11px;
+    }
+    .brc-ranking-table th {
+      border-bottom: 1px solid var(--line);
+      background: #f7f9fc;
+      padding: 9px 6px;
+      color: #536174;
+      font-size: 11px;
+      font-weight: 600;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .brc-ranking-table th:first-child { width: 25%; text-align: left; padding-left: 10px; }
+    .brc-ranking-table td {
+      border-bottom: 1px solid var(--line-soft);
+      padding: 10px 6px;
+      color: #344054;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .brc-ranking-table td:first-child {
+      overflow: hidden;
+      padding-left: 10px;
+      text-align: left;
+      text-overflow: ellipsis;
+    }
+    .brc-ranking-table tbody tr { cursor: pointer; }
+    .brc-ranking-table tbody tr:hover td { background: #f8fbff; }
+    .brc-ranking-table .brc-rate { color: var(--primary); font-weight: 600; }
+    .brc-table-empty { padding: 32px 10px !important; color: #98a2b3 !important; text-align: center !important; }
+    .brc-method-note {
+      border-top: 1px solid var(--line-soft);
+      padding: 10px 18px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .brc-method-note strong { color: #667085; font-weight: 600; }
+
+    #detailDialog, #projectDetailDialog, #chartDetailDialog {
+      width: min(980px, calc(100vw - 32px));
+      max-width: 980px;
+      max-height: min(84vh, 760px);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      padding: 0;
+      color: var(--text);
+      box-shadow: 0 20px 60px rgba(15, 35, 65, .2);
+    }
+    #projectDetailDialog {
+      width: min(1180px, calc(100vw - 32px));
+      max-width: 1180px;
+      max-height: min(88vh, 820px);
+    }
+    #detailDialog::backdrop, #projectDetailDialog::backdrop, #chartDetailDialog::backdrop { background: rgba(16, 24, 40, .4); }
+    .brc-dialog-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      border-bottom: 1px solid var(--line-soft);
+      padding: 18px 20px 15px;
+    }
+    .brc-dialog-head h2 { margin: 0; font-size: 17px; font-weight: 600; }
+    #detailMeta, #chartDetailMeta { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .brc-dialog-tools {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 10px;
+    }
+    .brc-dialog-filter {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: #536174;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .brc-dialog-filter select {
+      height: 32px;
+      min-width: 130px;
+      border: 1px solid #d7dee8;
+      border-radius: 6px;
+      background: #fff;
+      padding: 0 9px;
+      color: var(--text);
+      font-size: 12px;
+    }
+    #closeDetail, #closeProjectDetail, #closeChartDetail {
+      display: grid;
+      flex: 0 0 auto;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: #667085;
+      cursor: pointer;
+      font-size: 19px;
+      line-height: 1;
+    }
+    #closeDetail:hover, #closeProjectDetail:hover, #closeChartDetail:hover { background: #f7f9fc; color: var(--text); }
+    .brc-detail-scroll { max-height: calc(84vh - 88px); overflow: auto; padding: 14px 20px 20px; }
+    .brc-detail-table {
+      width: 100%;
+      min-width: 680px;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .brc-detail-table th {
+      position: sticky;
+      top: 0;
+      border-bottom: 1px solid var(--line);
+      background: #f7f9fc;
+      padding: 10px;
+      color: #536174;
+      font-weight: 600;
+      text-align: left;
+      white-space: nowrap;
+    }
+    .brc-detail-table td {
+      border-bottom: 1px solid var(--line-soft);
+      padding: 10px;
+      color: #344054;
+      vertical-align: top;
+    }
+    .brc-detail-table--recharge { width: max-content; min-width: 2000px; }
+    .brc-detail-table--recharge th, .brc-detail-table--recharge td { white-space: nowrap; }
+    .brc-user-primary {
+      display: block;
+      color: var(--text);
+      font-weight: 600;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+    .brc-user-meta {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+    .brc-user-meta + .brc-user-meta { margin-top: 2px; }
+    .brc-detail-table tr:last-child td { border-bottom: 0; }
+    .brc-detail-summary { margin-top: 8px; color: #344054; font-size: 13px; font-weight: 600; }
+    .brc-detail-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--line-soft); padding: 10px 20px; color: var(--muted); font-size: 11px; }
+    .brc-detail-pagination label { display: inline-flex; align-items: center; gap: 5px; }
+    .brc-detail-pagination select, .brc-detail-pagination button { height: 28px; border: 1px solid #d7dee8; border-radius: 5px; background: #fff; padding: 0 8px; color: #536174; font: inherit; }
+    .brc-detail-pagination button { cursor: pointer; }
+    .brc-detail-pagination button:disabled { cursor: default; color: #b7c0cd; background: #f7f9fc; }
+    #projectDetailDialog .brc-coverage-detail { margin: 0; overflow: hidden; border: 0; border-radius: 0; box-shadow: none; }
+    #projectDetailDialog .brc-coverage-detail-head { align-items: center; padding-right: 18px; }
+    #projectDetailDialog .brc-coverage-detail-scroll { max-height: calc(88vh - 100px); }
+    .brc-coverage-visualizations {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 14px;
+      min-width: 0;
+    }
+    .brc-coverage-chart-card { min-width: 0; overflow: hidden; }
+    .brc-coverage-chart-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line-soft);
+      padding: 15px 18px 12px;
+    }
+    .brc-coverage-chart-head h2 { margin: 0; font-size: 15px; font-weight: 600; }
+    .brc-coverage-chart-head p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+    .brc-coverage-chart-demo {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      min-height: 24px;
+      border: 1px solid #f2dfb7;
+      border-radius: 6px;
+      background: #fffaf0;
+      padding: 2px 8px;
+      color: #785016;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    .brc-coverage-visualizations-note {
+      grid-column: 1 / -1;
+      margin: 0;
+      border: 1px solid #e4eaf2;
+      border-radius: 7px;
+      background: #f8fafc;
+      padding: 8px 11px;
+      color: #667085;
+      font-size: 12px;
+    }
+    .brc-coverage-chart-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 8px; }
+    .brc-coverage-tier-field { display: inline-flex; align-items: center; gap: 6px; color: #667085; font-size: 11px; white-space: nowrap; }
+    .brc-coverage-tier-field select {
+      height: 28px;
+      min-width: 70px;
+      border: 1px solid #d7dee8;
+      border-radius: 6px;
+      background: #fff;
+      padding: 0 7px;
+      color: var(--text);
+      font-size: 12px;
+    }
+    .brc-coverage-chart-canvas {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      height: 300px;
+    }
+    .brc-coverage-chart-canvas:empty::before {
+      display: grid;
+      height: 100%;
+      place-items: center;
+      color: #98a2b3;
+      content: "图表加载后显示";
+      font-size: 12px;
+      text-align: center;
+    }
+    #rechargeTrendChart, #churnTrendChart { height: 320px; }
+    #serverRechargeBarChart { height: 360px; }
+    .brc-coverage-server-bars-card { grid-column: 1 / -1; }
+    .brc-coverage-detail { margin: 0; overflow: hidden; }
+    .brc-coverage-detail-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--line-soft);
+      padding: 15px 18px 13px;
+    }
+    .brc-coverage-detail-head h2 { margin: 0; font-size: 15px; font-weight: 600; }
+    .brc-coverage-detail-head p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+    #coverageDetailCount {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      min-height: 26px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #f7f9fc;
+      padding: 3px 9px;
+      color: #667085;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    .brc-coverage-detail-scroll {
+      max-height: 480px;
+      min-width: 0;
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+    }
+    .brc-coverage-detail-table {
+      width: 100%;
+      min-width: 1020px;
+      border-collapse: separate;
+      border-spacing: 0;
+      table-layout: fixed;
+      font-size: 12px;
+    }
+    .brc-coverage-detail-table th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      border-bottom: 1px solid var(--line);
+      background: #f7f9fc;
+      padding: 10px 11px;
+      color: #536174;
+      font-weight: 600;
+      text-align: left;
+      white-space: nowrap;
+    }
+    .brc-coverage-detail-table th:nth-child(1) { width: 17%; }
+    .brc-coverage-detail-table th:nth-child(2) { width: 20%; }
+    .brc-coverage-detail-table th:nth-child(3) { width: 25%; }
+    .brc-coverage-detail-table th:nth-child(4) { width: 23%; }
+    .brc-coverage-detail-table th:nth-child(5) { width: 15%; }
+    .brc-coverage-detail-table td {
+      border-bottom: 1px solid var(--line-soft);
+      padding: 9px 11px;
+      color: #344054;
+      vertical-align: top;
+      overflow-wrap: anywhere;
+    }
+    .brc-coverage-detail-table tbody tr:hover td { background: #f8fbff; }
+    .brc-coverage-detail-empty { padding: 36px 12px !important; color: #98a2b3 !important; text-align: center; }
+    .brc-status-pill {
+      display: inline-flex;
+      border-radius: 10px;
+      background: var(--warning-soft);
+      padding: 2px 8px;
+      color: var(--warning);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    .brc-status-pill.is-covered { background: var(--success-soft); color: var(--success); }
+    .brc-status-pill.is-uncovered { background: #f1f3f6; color: #667085; }
+
+    @media (max-width: 1080px) {
+      .brc-toolbar { align-items: stretch; flex-direction: column; }
+      .brc-dimension { align-self: flex-start; }
+    }
+    @media (max-width: 920px) {
+      #summaryCards { grid-template-columns: minmax(0, 1fr); }
+      .coverage-hero, .summary-support { grid-column: 1; }
+      .brc-analysis-grid { grid-template-columns: minmax(0, 1fr); }
+      .brc-chart-section { border-right: 0; border-bottom: 1px solid var(--line-soft); }
+    }
+    @media (max-width: 700px) {
+      .brc-page { padding: 14px 14px 24px; }
+      .brc-heading { align-items: flex-start; flex-direction: column; gap: 10px; }
+      .brc-source-status { max-width: none; }
+      .brc-source-status { white-space: normal; }
+      .brc-tabs { flex-wrap: wrap; gap: 0 18px; overflow: visible; }
+      #summaryCards { grid-template-columns: minmax(0, 1fr); gap: 9px; }
+      .coverage-hero { grid-template-columns: minmax(0, 1fr) 94px; gap: 10px; min-height: 148px; padding: 14px; }
+      .coverage-ring { width: 92px; height: 92px; }
+      .coverage-ring::before { inset: 7px; }
+      .coverage-ring strong { font-size: 18px; }
+      .coverage-hero .coverage-hero-value { font-size: 32px; }
+      .summary-support { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      .summary-support > * { min-height: 68px; padding: 9px 10px; }
+      .brc-toolbar { padding: 0; }
+      .brc-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; gap: 10px 12px; }
+      .brc-field-date { grid-column: 1 / -1; }
+      .brc-date-range { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto; }
+      .brc-field-project, .brc-field-group, .brc-field-tier, .brc-field-staff { flex-basis: auto; }
+
+      .brc-analysis-head { align-items: flex-start; flex-direction: column; }
+      .brc-legend { justify-content: flex-start; }
+      .brc-chart-section, .brc-ranking-section { padding: 14px 12px; }
+      .brc-method-note { padding: 10px 12px; }
+      .brc-coverage-detail-head { align-items: flex-start; flex-direction: row; gap: 8px; padding: 14px 12px 12px; }
+      .brc-coverage-visualizations { grid-template-columns: minmax(0, 1fr); }
+      .brc-coverage-server-bars-card { grid-column: auto; }
+      .brc-coverage-chart-head { align-items: flex-start; flex-direction: column; padding: 14px 12px 11px; }
+      .brc-coverage-chart-actions { width: 100%; justify-content: space-between; }
+      .brc-coverage-chart-canvas { height: 290px; }
+      #rechargeTrendChart, #churnTrendChart { height: 300px; }
+      #serverRechargeBarChart { height: 320px; }
+      .brc-chart-scale { margin-left: 90px; }
+      .brc-coverage-row { grid-template-columns: minmax(64px, 78px) minmax(0, 1fr); column-gap: 9px; }
+      .brc-dialog-head { padding: 15px 14px 12px; }
+      .brc-detail-scroll { padding: 12px 14px 16px; }
+      .brc-dialog-head { align-items: flex-start; flex-direction: column; gap: 10px; }
+      .brc-dialog-tools { width: 100%; justify-content: space-between; }
+      .brc-dialog-filter { min-width: 0; flex: 1 1 auto; }
+      .brc-dialog-filter select { min-width: 0; max-width: 220px; }
+      #projectDetailDialog .brc-coverage-detail-head { align-items: flex-start; }
+      #projectDetailDialog .brc-coverage-detail-scroll { max-height: calc(88vh - 125px); }
+    }
+  </style>
+<style>html[data-paid-auth="loading"] body { display: none; }</style>
+<script src="./access-guard.js?v=20260930-release" defer></script>
+</head>
+<body>
+  <main class="brc-page">
+    <header class="brc-heading">
+      <div>
+        <div class="brc-breadcrumb">私域用户数据 / 用户池</div>
+        <h1>付费用户覆盖</h1>
+        <p>按付费分层查看员工名下用户的好友建立情况</p>
+      </div>
+      <div id="sourceStatus" class="brc-source-status" role="status" aria-live="polite">演示数据 · 个微好友关系待接入</div>
+    </header>
+
+    <nav class="brc-tabs" aria-label="用户池页签">
+      <span class="brc-tab-item">数据明细</span>
+      <span class="brc-tab-item">待引入</span>
+      <span class="brc-tab-item">用户画像</span>
+      <span class="brc-tab-item" aria-current="page">付费用户覆盖</span>
+      <a class="brc-tab-utility" href="./big-r-rules.html">大R规则配置</a>
+    </nav>
+
+    <section class="brc-toolbar" aria-label="看板筛选">
+      <div class="brc-filters">
+      <div class="brc-field brc-field-date">
+        <label for="dateStart">统计日期</label>
+        <div class="brc-date-range">
+          <input id="dateStart" type="date" aria-label="开始日期" value="2026-04-01">
+          <span>至</span>
+          <input id="dateEnd" type="date" aria-label="结束日期" value="2026-09-30">
+          <button id="resetDateRange" type="button" class="brc-date-reset">重置全部</button>
+        </div>
+        <small id="dateRangeHint" aria-live="polite">含起止日期 · 当前全部演示日期</small>
+      </div>
+        <div class="brc-field brc-field-project">
+          <label for="projectFilter">项目筛选</label>
+          <select id="projectFilter" aria-label="项目筛选">
+            <option value="">全部项目</option>
+          </select>
+        </div>
+        <div class="brc-field brc-field-tier">
+          <label for="paidTierFilter">付费分层</label>
+          <select id="paidTierFilter" aria-label="付费用户分层">
+            <option value="all">全部付费用户</option>
+            <option value="大R">大R</option>
+            <option value="中R">中R</option>
+            <option value="小R">小R</option>
+          </select>
+        </div>
+        <div class="brc-field brc-field-group">
+          <label for="teamFilter">分组范围</label>
+          <select id="teamFilter" aria-label="分组范围">
+            <option value="">全部分组</option>
+          </select>
+        </div>
+        <div class="brc-field brc-field-staff">
+          <label for="staffSearch">员工检索</label>
+          <input id="staffSearch" type="search" placeholder="搜索员工姓名" autocomplete="off">
+        </div>
+      </div>
+    </section>
+
+    <section id="summaryCards" aria-label="付费用户好友覆盖汇总指标">
+      <div><span>私域总用户</span><strong>—</strong><small>当前筛选范围内去重用户</small></div>
+      <div><span>应覆盖任务数</span><strong>—</strong><small>员工 × 用户覆盖任务</small></div>
+      <div><span>已覆盖</span><strong>—</strong><small>个微好友关系确认</small></div>
+      <div><span>覆盖率</span><strong>—</strong><small>已覆盖 / 应覆盖</small></div>
+      <div><span>待核实</span><strong>—</strong><small>接口或身份信息待确认</small></div>
+    </section>
+
+    <section class="brc-panel brc-analysis" aria-labelledby="coverageHeading">
+      <header class="brc-analysis-head">
+        <div>
+          <div class="brc-ranking-title">
+            <h2 id="coverageHeading">付费用户好友覆盖排行</h2>
+      <div class="brc-dimension">
+        <div id="dimensionTabs" role="group" aria-label="排行维度">
+          <button type="button" class="active" data-dimension="staff" aria-pressed="true">员工排行</button>
+          <button type="button" data-dimension="group" aria-pressed="false">分组排行</button>
+          <button type="button" data-dimension="project" aria-pressed="false">项目排行</button>
+        </div>
+      </div>
+          </div>
+          <p>按确认未覆盖任务数从高到低排序；点击排行查看对应用户任务</p>
+        </div>
+        <div class="brc-legend" aria-label="好友状态说明">
+          <span class="covered"><i></i>已覆盖</span>
+          <span class="uncovered"><i></i>确认未覆盖</span>
+          <span class="pending"><i></i>待核实</span>
+        </div>
+      </header>
+
+      <div class="brc-analysis-grid">
+        <section class="brc-chart-section" aria-labelledby="progressHeading">
+          <div class="brc-section-head">
+            <div>
+              <h3 id="progressHeading">付费用户覆盖进度</h3>
+              <p>按已覆盖、确认未覆盖和待核实任务分列</p>
+            </div>
+          </div>
+          <div class="brc-chart-scale" aria-hidden="true"><span>0%</span><span>50%</span><span>100%</span></div>
+          <div id="coverageChart" role="region" aria-label="员工、分组或项目的付费用户覆盖进度">
+            <div class="brc-empty">排行加载后显示覆盖进度</div>
+          </div>
+        </section>
+
+        <section class="brc-ranking-section" aria-labelledby="rankingHeading">
+          <div class="brc-section-head">
+            <div>
+              <h3 id="rankingHeading">覆盖排行</h3>
+              <p>按所选排行维度汇总员工 × 用户覆盖任务</p>
+            </div>
+            <button id="openProjectDetails" type="button" class="brc-inline-action">查看项目用户明细</button>
+          </div>
+          <div class="brc-table-wrap">
+            <table class="brc-ranking-table">
+              <thead>
+                <tr id="rankingHead">
+                  <th scope="col">员工</th>
+                  <th scope="col">应覆盖任务</th>
+                  <th scope="col">已覆盖任务</th>
+                  <th scope="col">确认未覆盖任务</th>
+                  <th scope="col">待核实任务</th>
+                  <th scope="col">覆盖率</th>
+                </tr>
+              </thead>
+              <tbody id="rankingRows">
+                <tr><td colspan="6" class="brc-table-empty">排行数据加载后显示</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <div class="brc-method-note"><strong>口径提示：</strong>统计单位为员工 × 用户覆盖任务，“待核实”与“确认未覆盖”分开统计；个微接口未接入、身份无法唯一匹配或数据未返回时，不计为确认未覆盖。分组排行汇总组内员工 × 用户任务。项目排行按员工 × 用户 × 项目统计，同一员工和用户跨项目分别计行，项目行合计可能高于全局员工 × 用户任务数；私域总用户按身份去重。</div>
+    </section>
+
+    <section class="brc-coverage-visualizations" aria-label="充值与流失分析图表">
+      <article class="brc-panel brc-coverage-chart-card" aria-labelledby="rechargeTrendHeading">
+        <header class="brc-coverage-chart-head">
+          <div>
+            <h2 id="rechargeTrendHeading">充值金额趋势</h2>
+            <p>按日期展示充值金额变化</p>
+          </div>
+          <div class="brc-coverage-chart-actions">
+            <button type="button" class="brc-inline-action" data-chart-detail="rechargeTrendChart" aria-label="查看充值金额趋势明细">查看明细</button>
+            <span class="brc-coverage-chart-demo">演示数据</span>
+          </div>
+        </header>
+        <div id="rechargeTrendChart" class="brc-coverage-chart-canvas" role="img" aria-label="充值金额趋势图表，演示数据"></div>
+      </article>
+
+      <article class="brc-panel brc-coverage-chart-card" aria-labelledby="churnTrendHeading">
+        <header class="brc-coverage-chart-head">
+          <div>
+            <h2 id="churnTrendHeading">流失用户趋势</h2>
+            <p>按日期展示流失用户变化</p>
+          </div>
+          <div class="brc-coverage-chart-actions">
+            <button type="button" class="brc-inline-action" data-chart-detail="churnTrendChart" aria-label="查看流失用户趋势明细">查看明细</button>
+            <span class="brc-coverage-chart-demo">演示数据</span>
+          </div>
+        </header>
+        <div id="churnTrendChart" class="brc-coverage-chart-canvas" role="img" aria-label="流失用户趋势图表，演示数据"></div>
+      </article>
+
+      <article class="brc-panel brc-coverage-chart-card" aria-labelledby="churnPaymentPieHeading">
+        <header class="brc-coverage-chart-head">
+          <div>
+            <h2 id="churnPaymentPieHeading">流失用户付费分类占比</h2>
+            <p>按付费分类展示流失用户占比</p>
+          </div>
+          <div class="brc-coverage-chart-actions">
+            <button type="button" class="brc-inline-action" data-chart-detail="churnPaymentPieChart" aria-label="查看流失用户付费分类占比明细">查看明细</button>
+            <span class="brc-coverage-chart-demo">演示数据</span>
+          </div>
+        </header>
+        <div id="churnPaymentPieChart" class="brc-coverage-chart-canvas" role="img" aria-label="流失用户付费分类占比图表，演示数据"></div>
+      </article>
+
+      <article class="brc-panel brc-coverage-chart-card" aria-labelledby="rechargeTierPieHeading">
+        <header class="brc-coverage-chart-head">
+          <div>
+            <h2 id="rechargeTierPieHeading">充值分层占比</h2>
+            <p>按单笔实付金额门槛统计充值订单</p>
+          </div>
+          <div class="brc-coverage-chart-actions">
+            <label class="brc-coverage-tier-field" for="rechargeTierSelect">
+              <span>单笔实付</span>
+              <select id="rechargeTierSelect" aria-label="充值单笔实付门槛">
+                <option value="500" selected>500</option>
+                <option value="1000">1000</option>
+                <option value="300">300</option>
+              </select>
+            </label>
+            <button type="button" class="brc-inline-action" data-chart-detail="rechargeTierPieChart" aria-label="查看充值分层占比明细">查看明细</button>
+            <span class="brc-coverage-chart-demo">演示数据</span>
+          </div>
+        </header>
+        <div id="rechargeTierPieChart" class="brc-coverage-chart-canvas" role="img" aria-label="充值分层占比图表，演示数据"></div>
+      </article>
+
+      <article class="brc-panel brc-coverage-chart-card" aria-labelledby="rechargeCoveragePieHeading">
+        <header class="brc-coverage-chart-head">
+          <div>
+            <h2 id="rechargeCoveragePieHeading">充值用户覆盖情况</h2>
+            <p>充值用户覆盖为独立演示口径，不代表付费用户好友覆盖任务</p>
+          </div>
+          <div class="brc-coverage-chart-actions">
+            <button type="button" class="brc-inline-action" data-chart-detail="rechargeCoveragePieChart" aria-label="查看充值用户覆盖情况明细">查看明细</button>
+            <span class="brc-coverage-chart-demo">演示数据</span>
+          </div>
+        </header>
+        <div id="rechargeCoveragePieChart" class="brc-coverage-chart-canvas" role="img" aria-label="充值用户覆盖情况图表，独立演示数据，不代表付费用户好友覆盖任务"></div>
+      </article>
+
+      <article class="brc-panel brc-coverage-chart-card" aria-labelledby="revisitPieHeading">
+        <header class="brc-coverage-chart-head">
+          <div>
+            <h2 id="revisitPieHeading">回访情况统计</h2>
+            <p>按回访情况展示用户分布</p>
+          </div>
+          <div class="brc-coverage-chart-actions">
+            <button type="button" class="brc-inline-action" data-chart-detail="revisitPieChart" aria-label="查看回访情况统计明细">查看明细</button>
+            <span class="brc-coverage-chart-demo">演示数据</span>
+          </div>
+        </header>
+        <div id="revisitPieChart" class="brc-coverage-chart-canvas" role="img" aria-label="回访情况统计图表，演示数据"></div>
+      </article>
+
+      <article class="brc-panel brc-coverage-chart-card brc-coverage-server-bars-card" aria-labelledby="serverRechargeBarHeading">
+        <header class="brc-coverage-chart-head">
+          <div>
+            <h2 id="serverRechargeBarHeading">充值用户区服分布</h2>
+            <p>按区服对比充值金额</p>
+          </div>
+          <div class="brc-coverage-chart-actions">
+            <button type="button" class="brc-inline-action" data-chart-detail="serverRechargeBarChart" aria-label="查看充值用户区服分布明细">查看明细</button>
+            <span class="brc-coverage-chart-demo">演示数据</span>
+          </div>
+        </header>
+        <div id="serverRechargeBarChart" class="brc-coverage-chart-canvas" role="img" aria-label="充值用户区服分布图表，演示数据"></div>
+      </article>
+
+      <p class="brc-coverage-visualizations-note">图表均由独立演示记录汇总；经营统计与员工 × 用户覆盖任务分别统计，充值用户覆盖不代表好友关系。</p>
+    </section>
+
+  </main>
+
+  <dialog id="projectDetailDialog" aria-labelledby="coverageDetailHeading">
+    <section class="brc-panel brc-coverage-detail">
+      <header class="brc-coverage-detail-head">
+        <div>
+          <h2 id="coverageDetailHeading">项目用户覆盖明细</h2>
+          <p>每个项目 × 用户一条覆盖任务；跨项目用户可出现多行；演示数据</p>
+        </div>
+        <div class="brc-dialog-tools">
+          <span id="coverageDetailCount">演示任务加载中</span>
+          <button id="closeProjectDetail" type="button" aria-label="关闭项目用户明细">×</button>
+        </div>
+      </header>
+      <div class="brc-coverage-detail-scroll" role="region" aria-label="项目用户覆盖明细表，可滚动查看" tabindex="0">
+        <table class="brc-coverage-detail-table">
+          <thead>
+            <tr>
+              <th scope="col">项目</th>
+              <th scope="col">用户／角色</th>
+              <th scope="col">区服</th>
+              <th scope="col">累计充值</th>
+              <th scope="col">最后登录</th>
+              <th scope="col">归属员工／分组</th>
+              <th scope="col">好友状态</th>
+            </tr>
+          </thead>
+          <tbody id="coverageDetailRows">
+            <tr><td colspan="7" class="brc-coverage-detail-empty">覆盖任务明细加载后显示</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </dialog>
+
+  <dialog id="detailDialog" aria-labelledby="detailTitle">
+    <div class="brc-dialog-head">
+      <div>
+        <h2 id="detailTitle">付费用户好友覆盖明细</h2>
+        <div id="detailSummary" class="brc-detail-summary">
+          <p id="detailMeta">员工和分组排行按员工 × 用户任务一行；项目排行按员工 × 用户 × 项目任务一行。好友关系待个微接口确认。</p>
+        </div>
+      </div>
+      <div class="brc-dialog-tools">
+        <label class="brc-dialog-filter" for="detailStatusFilter">
+          <span>好友状态</span>
+          <select id="detailStatusFilter" aria-label="按好友状态筛选">
+            <option value="all">全部状态</option>
+            <option value="yes">已覆盖</option>
+            <option value="no">确认未覆盖</option>
+            <option value="unknown">待核实</option>
+          </select>
+        </label>
+        <button id="closeDetail" type="button" aria-label="关闭明细">×</button>
+      </div>
+    </div>
+    <div class="brc-detail-scroll">
+      <table class="brc-detail-table">
+        <thead>
+          <tr>
+            <th scope="col">用户</th>
+            <th scope="col">归属员工</th>
+            <th scope="col">用户分类</th>
+            <th scope="col">项目归属</th>
+            <th scope="col">好友状态</th>
+            <th scope="col">状态依据</th>
+          </tr>
+        </thead>
+        <tbody id="detailRows">
+          <tr><td colspan="6" class="brc-table-empty">选择排行后显示对应的付费用户覆盖任务明细</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </dialog>
+
+  <dialog id="chartDetailDialog" aria-labelledby="chartDetailTitle" aria-describedby="chartDetailMeta">
+    <div class="brc-dialog-head">
+      <div>
+        <h2 id="chartDetailTitle">统计明细</h2>
+        <p id="chartDetailMeta">独立演示统计数据</p>
+      </div>
+      <div class="brc-dialog-tools">
+        <button id="closeChartDetail" type="button" aria-label="关闭统计明细">×</button>
+      </div>
+    </div>
+    <p id="chartDetailSummary" class="brc-detail-summary">演示记录统计</p>
+    <div class="brc-detail-scroll">
+      <table class="brc-detail-table">
+        <thead><tr id="chartDetailHead">
+          <th scope="col">记录与时间</th>
+          <th scope="col">用户与角色</th>
+          <th scope="col">项目与人员</th>
+          <th scope="col">区服与业务字段</th>
+        </tr></thead>
+        <tbody id="chartDetailRows"></tbody>
+      </table>
+    </div>
+    <footer class="brc-detail-pagination" aria-label="明细分页">
+      <label for="chartDetailPageSize">每页
+        <select id="chartDetailPageSize" aria-label="每页记录数">
+          <option value="20" selected>20</option>
+          <option value="50">50</option>
+        </select>条
+      </label>
+      <span id="chartDetailPageInfo">第 1 / 1 页 · 共 0 条</span>
+      <button id="chartDetailFirst" type="button" aria-label="第一页">首页</button>
+      <button id="chartDetailPrevious" type="button" aria-label="上一页">上一页</button>
+      <button id="chartDetailNext" type="button" aria-label="下一页">下一页</button>
+      <button id="chartDetailLast" type="button" aria-label="最后一页">末页</button>
+    </footer>
+  </dialog>
+
+  <script src="./vendor/echarts.min.js" defer></script>
+  <script src="./app.js?v=20261002-record-details-v2" defer></script>
+</body>
+</html>

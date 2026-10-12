@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>通讯录</title>
+  <link rel="stylesheet" href="/contacts.css?v=20261002">
+</head>
+<body>
+  <main class="contacts-app" id="contactsApp">
+    <aside class="accounts-pane" aria-label="微信账号">
+      <div class="accounts-heading"><span class="heading-mark"></span><strong>微信账号</strong></div>
+      <div class="account-filters">
+        <label class="visually-hidden" for="projectFilter">项目</label>
+        <select id="projectFilter" disabled><option value="">全部项目</option></select>
+        <label class="visually-hidden" for="departmentFilter">部门</label>
+        <select id="departmentFilter" disabled><option value="">全部部门</option></select>
+        <div class="account-search">
+          <label class="visually-hidden" for="accountKeyword">搜索部门、账号名或微信号</label>
+          <input id="accountKeyword" type="search" placeholder="搜索部门/账号名/微信号" disabled>
+          <button id="accountSearchButton" type="button" disabled>搜索</button>
+        </div>
+      </div>
+      <div class="account-status" id="accountStatus" role="status" aria-live="polite">正在读取微信账号…</div>
+      <div class="account-list" id="accountList" role="listbox" aria-label="微信账号列表"></div>
+    </aside>
+
+    <section class="contacts-pane" aria-label="联系人通讯录">
+      <nav class="contact-tabs" aria-label="通讯录类型">
+        <button type="button" class="contact-tab active" aria-current="page">微信联系人</button>
+        <button type="button" class="contact-tab unavailable" disabled title="群成员接口暂未配置">群成员</button>
+      </nav>
+
+      <div class="contacts-content">
+        <section class="toolbar" aria-label="联系人筛选与操作">
+          <div class="filters-row">
+            <label class="search-field">
+              <span class="visually-hidden">搜索备注、昵称或角色ID</span>
+              <input id="contactKeyword" type="search" placeholder="请输入备注/昵称/角色ID" disabled>
+              <span class="search-icon" aria-hidden="true">⌕</span>
+            </label>
+            <label>
+              <span class="visually-hidden">好友关系</span>
+              <select id="friendStatusFilter" disabled>
+                <option value="">全部关系状态</option>
+                <option value="marked_not_friend">已标记非好友</option>
+                <option value="unknown">关系未确认</option>
+              </select>
+            </label>
+            <label>
+              <span class="visually-hidden">客户层级</span>
+              <select id="customerLevelFilter" disabled><option value="">客户层级</option></select>
+            </label>
+            <label class="tag-search">
+              <span class="visually-hidden">输入标签</span>
+              <input id="tagFilter" type="search" placeholder="请输入标签" disabled>
+            </label>
+            <div class="date-filter" aria-label="添加时间范围">
+              <label class="visually-hidden" for="addedFrom">添加时间起</label>
+              <input id="addedFrom" type="text" placeholder="添加时间起" disabled>
+              <span aria-hidden="true">-</span>
+              <label class="visually-hidden" for="addedTo">添加时间止</label>
+              <input id="addedTo" type="text" placeholder="添加时间止" disabled>
+            </div>
+            <label>
+              <span class="visually-hidden">新好友筛选</span>
+              <select id="newFriendFilter" disabled>
+                <option value="">新增好友</option>
+                <option value="true">是新好友</option>
+                <option value="false">不是新好友</option>
+              </select>
+            </label>
+          </div>
+          <div class="toolbar-actions">
+            <button class="button primary" id="contactQueryButton" type="button" disabled>查询</button>
+            <button class="button" id="batchTagButton" type="button" disabled title="批量标签接口暂未配置">批量标签</button>
+            <button class="button primary" id="exportButton" type="button" disabled title="导出当前页已加载联系人">导出当前页</button>
+          </div>
+        </section>
+
+        <div class="notice" id="pageNotice" role="status" aria-live="polite" hidden></div>
+
+        <section class="table-panel" aria-label="微信联系人列表">
+          <div class="table-scroll" id="tableScroll">
+            <table class="contacts-table">
+              <thead>
+                <tr>
+                  <th class="check-cell"><input type="checkbox" aria-label="选择当前页联系人" disabled title="批量标签接口暂未配置"></th>
+                  <th class="wechat-cell">微信</th>
+                  <th>微信号</th>
+                  <th>好友关系</th>
+                  <th>性别</th>
+                  <th>添加时间</th>
+                  <th>省市</th>
+                  <th>标签</th>
+                  <th>游戏</th>
+                  <th>账号唯一ID</th>
+                  <th class="operation-cell">操作</th>
+                </tr>
+              </thead>
+              <tbody id="contactRows"></tbody>
+            </table>
+            <div class="table-state" id="tableState">请选择左侧微信账号</div>
+          </div>
+          <footer class="pager">
+            <div class="pager-total" id="totalText">暂无统计数据</div>
+            <div class="pager-controls">
+              <label>每页
+                <select id="pageSizeSelect" disabled aria-label="每页显示条数">
+                  <option value="20" selected>20</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+                条
+              </label>
+              <span id="pageText">第 1 页</span>
+              <button class="page-button" id="prevPageButton" type="button" disabled>‹</button>
+              <button class="page-number active" id="currentPageButton" type="button" aria-current="page">1</button>
+              <button class="page-button" id="nextPageButton" type="button" disabled>›</button>
+              <label class="jump-label">跳至
+                <input id="jumpPageInput" type="number" min="1" value="1" disabled aria-label="跳转到页码">
+                页
+              </label>
+              <button class="page-button" id="jumpPageButton" type="button" disabled>跳转</button>
+            </div>
+          </footer>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="detailDialog" class="detail-dialog" aria-labelledby="detailTitle">
+    <div class="dialog-head">
+      <div><h2 id="detailTitle">联系人详情</h2><p id="detailSubtitle"></p></div>
+      <button type="button" class="close-button" id="closeDetailButton" aria-label="关闭详情">×</button>
+    </div>
+    <div class="detail-body" id="detailBody"></div>
+  </dialog>
+  <script src="/contacts.js?v=20261002-relation-v3"></script>
+</body>
+</html>

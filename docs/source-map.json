@@ -1,0 +1,206 @@
+{
+  "origin": "Current public frontend snapshot d95aace",
+  "kind": "Reconstructed source; original names and JSX are not fully recoverable",
+  "pages": [
+    {
+      "name": "AppShell",
+      "file": "src/pages/AppShell.js",
+      "dependencies": 15
+    },
+    {
+      "name": "PrivateDomainPage",
+      "file": "src/pages/PrivateDomainPage.js",
+      "dependencies": 24
+    },
+    {
+      "name": "PrivateUsersPage",
+      "file": "src/pages/PrivateUsersPage.js",
+      "dependencies": 21
+    },
+    {
+      "name": "CustomerReusePage",
+      "file": "src/pages/CustomerReusePage.js",
+      "dependencies": 25
+    },
+    {
+      "name": "ContentPage",
+      "file": "src/pages/ContentPage.js",
+      "dependencies": 21
+    },
+    {
+      "name": "PerformanceRankingPage",
+      "file": "src/pages/PerformanceRankingPage.js",
+      "dependencies": 21
+    },
+    {
+      "name": "GameDetailPage",
+      "file": "src/pages/GameDetailPage.js",
+      "dependencies": 28
+    },
+    {
+      "name": "TeamDetailPage",
+      "file": "src/pages/TeamDetailPage.js",
+      "dependencies": 22
+    },
+    {
+      "name": "GamePersonPage",
+      "file": "src/pages/GamePersonPage.js",
+      "dependencies": 17
+    },
+    {
+      "name": "PersonProjectPage",
+      "file": "src/pages/PersonProjectPage.js",
+      "dependencies": 25
+    },
+    {
+      "name": "VideoAccountsPage",
+      "file": "src/pages/VideoAccountsPage.js",
+      "dependencies": 18
+    },
+    {
+      "name": "PackageDetailPage",
+      "file": "src/pages/PackageDetailPage.js",
+      "dependencies": 30
+    },
+    {
+      "name": "ProductsPage",
+      "file": "src/pages/ProductsPage.js",
+      "dependencies": 14
+    },
+    {
+      "name": "ChannelPage",
+      "file": "src/pages/ChannelPage.js",
+      "dependencies": 3
+    },
+    {
+      "name": "ChannelRevenuePage",
+      "file": "src/pages/ChannelRevenuePage.js",
+      "dependencies": 14
+    },
+    {
+      "name": "ChannelContractPage",
+      "file": "src/pages/ChannelContractPage.js",
+      "dependencies": 14
+    },
+    {
+      "name": "FinanceCostPage",
+      "file": "src/pages/FinanceCostPage.js",
+      "dependencies": 3
+    },
+    {
+      "name": "FinanceRevenuePage",
+      "file": "src/pages/FinanceRevenuePage.js",
+      "dependencies": 3
+    },
+    {
+      "name": "FinanceRoiPage",
+      "file": "src/pages/FinanceRoiPage.js",
+      "dependencies": 3
+    },
+    {
+      "name": "FinanceSettlementPage",
+      "file": "src/pages/FinanceSettlementPage.js",
+      "dependencies": 3
+    },
+    {
+      "name": "PersonnelArchivePage",
+      "file": "src/pages/PersonnelArchivePage.js",
+      "dependencies": 24
+    },
+    {
+      "name": "PersonnelTasksPage",
+      "file": "src/pages/PersonnelTasksPage.js",
+      "dependencies": 3
+    },
+    {
+      "name": "PersonnelReviewPage",
+      "file": "src/pages/PersonnelReviewPage.js",
+      "dependencies": 3
+    },
+    {
+      "name": "AssetsPage",
+      "file": "src/pages/AssetsPage.js",
+      "dependencies": 5
+    },
+    {
+      "name": "MediaAssetsPage",
+      "file": "src/pages/MediaAssetsPage.js",
+      "dependencies": 3
+    },
+    {
+      "name": "SopAssetsPage",
+      "file": "src/pages/SopAssetsPage.js",
+      "dependencies": 3
+    },
+    {
+      "name": "IntegrationPage",
+      "file": "src/pages/IntegrationPage.js",
+      "dependencies": 2
+    },
+    {
+      "name": "LegacyAdminPage",
+      "file": "src/pages/LegacyAdminPage.js",
+      "dependencies": 3
+    },
+    {
+      "name": "LegacyRolesPage",
+      "file": "src/pages/LegacyRolesPage.js",
+      "dependencies": 23
+    },
+    {
+      "name": "LegacyAuditPage",
+      "file": "src/pages/LegacyAuditPage.js",
+      "dependencies": 21
+    },
+    {
+      "name": "LegacyConfigPage",
+      "file": "src/pages/LegacyConfigPage.js",
+      "dependencies": 3
+    },
+    {
+      "name": "MainLoginPage",
+      "file": "src/pages/MainLoginPage.js",
+      "dependencies": 13
+    },
+    {
+      "name": "DashboardPage",
+      "file": "src/pages/DashboardPage.js",
+      "dependencies": 49
+    },
+    {
+      "name": "DataDetailPage",
+      "file": "src/pages/DataDetailPage.js",
+      "dependencies": 4
+    }
+  ],
+  "modules": [
+    "InsightRank-UG5EYt59.js",
+    "antd-DDGfblwO.js",
+    "chunk-QTnfLwEv.js",
+    "common-D9V9KONM.js",
+    "echarts-DbUlOwHf.js",
+    "echarts-risk-wordcloud-v26.min.js",
+    "echarts-wordcloud-risk-v26.min.js",
+    "install-B97INA7t.js",
+    "plugin-vue_export-helper-t2yy0X87.js",
+    "query-DFJle4bt.js",
+    "react-Dxa-hfIV.js",
+    "reuse-CiOE-ogp.js",
+    "reuseStandalone-C5MyoiRf.js",
+    "runtime-core.esm-bundler-Bx3NYHNM.js",
+    "runtime-dom.esm-bundler-D8Nb7C2t.js"
+  ],
+  "thirdPartyModules": [
+    "antd-DDGfblwO.js",
+    "chunk-QTnfLwEv.js",
+    "echarts-DbUlOwHf.js",
+    "echarts-risk-wordcloud-v26.min.js",
+    "echarts-wordcloud-risk-v26.min.js",
+    "install-B97INA7t.js",
+    "plugin-vue_export-helper-t2yy0X87.js",
+    "query-DFJle4bt.js",
+    "react-Dxa-hfIV.js",
+    "runtime-core.esm-bundler-Bx3NYHNM.js",
+    "runtime-dom.esm-bundler-D8Nb7C2t.js"
+  ]
+}
