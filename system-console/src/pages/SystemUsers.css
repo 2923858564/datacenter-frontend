@@ -1,0 +1,38 @@
+.roster-page, .roster-modal { color: var(--roster-text); font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif; }
+.roster-page { min-width: 0; background: var(--roster-page); }
+.roster-card { border-color: var(--roster-border); }
+.roster-card .ant-card-head-title { display: flex; align-items: center; min-height: 48px; }
+.roster-card .ant-card-head-title .roster-small { margin-left: 16px; font-weight: 400; }
+.roster-secondary { color: var(--roster-secondary); }
+.roster-small { font-size: 12px; line-height: 20px; }
+.roster-name { font-weight: 600; }
+.roster-number { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.roster-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.roster-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
+.roster-search { width: 280px; max-width: 100%; }
+.roster-filter { width: 112px; }
+.roster-page .roster-tag { color: var(--roster-secondary); background: var(--roster-subtle); border-color: var(--roster-border); margin-inline-end: 0; }
+.roster-page .roster-status { background: var(--roster-inactive); }
+.roster-page .roster-status.ant-switch-checked { background: var(--roster-success); }
+.roster-page .ant-table-cell { overflow-wrap: anywhere; }
+.roster-page .ant-table-pagination { gap: 8px; }
+.roster-loading { padding: 16px; }
+.roster-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 0 16px; }
+.roster-password-note { margin-bottom: 16px; padding: 8px 16px; background: var(--roster-subtle); border-radius: 6px; color: var(--roster-secondary); font-size: 14px; }
+.roster-password-current { margin-bottom: 16px; }
+.roster-password-label { color: var(--roster-secondary); font-size: 12px; margin-bottom: 8px; }
+.roster-password-help { color: var(--roster-secondary); font-size: 12px; margin-top: 8px; }
+@media (max-width: 600px) {
+  .roster-toolbar { align-items: stretch; flex-direction: column; }
+  .roster-filters { display: grid; grid-template-columns: minmax(0, 1fr) 96px; }
+  .roster-search, .roster-filter { width: 100%; }
+  .roster-toolbar > .ant-btn { align-self: flex-end; }
+  .roster-card .ant-card-body { padding: 8px; }
+  .roster-page .ant-table-cell-fix-right { position: static !important; }
+  .ant-layout:has(> .ant-layout-content .roster-page) { flex-direction: column; }
+  .ant-layout:has(.roster-page) > .ant-layout-sider { position: static !important; width: 100% !important; min-width: 0 !important; max-width: 100% !important; flex: none !important; height: auto !important; }
+  .ant-layout:has(.roster-page) > .ant-layout-sider .ant-menu { display: flex; overflow-x: auto; padding-top: 0 !important; }
+  .ant-layout:has(.roster-page) > .ant-layout-sider .ant-menu-item { flex: 0 0 auto; width: auto; }
+  .ant-layout-content:has(.roster-page) { margin-left: 0 !important; width: 100% !important; padding: 8px !important; }
+  .roster-modal .ant-modal-content { padding: 16px; }
+}
