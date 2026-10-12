@@ -33,22 +33,35 @@ function readableApiError(detail, status, method) {
 }
 
 async function request(path, opts = {}) {
-  const { timeoutMs = 15000, ...fetchOptions } = opts;
+  const { timeoutMs = 15000, authenticated = true, ...fetchOptions } = opts;
   const method = (fetchOptions.method || "GET").toUpperCase();
   const token = sessionStorage.getItem("dc_token") || "";
-  const headers = { "Content-Type": "application/json", ...(opts.headers || {}) };
-  if (token) headers.Authorization = `Bearer ${token}`;
+  const headers = new Headers(fetchOptions.headers);
+  if (fetchOptions.body != null && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+  if (authenticated && token) headers.set("Authorization", `Bearer ${token}`);
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
     const res = await fetch(path, { ...fetchOptions, headers, signal: ctrl.signal });
-    if (res.status === 401) {
-      if (onUnauthorized) onUnauthorized();
-      throw new Error("登录已过期，请重新登录");
+    if (res.status === 401 && authenticated) {
+      if (onUnauthorized && (sessionStorage.getItem("dc_token") || "") === token) onUnauthorized();
+      throw Object.assign(new Error("登录已过期，请重新登录"), { status: 401 });
     }
-    const j = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(readableApiError(j.detail || j.message, res.status, method));
+    const text = await res.text();
+    let j = {};
+    try {
+      if (text.trim()) j = JSON.parse(text);
+    } catch {
+      if (res.ok) throw new Error("服务返回数据异常，请重试");
+    }
+    if (!res.ok) throw Object.assign(new Error(readableApiError(j?.detail || j?.message, res.status, method)), { status: res.status });
+    if (res.status === 204 || (!text.trim() && method !== "GET")) return {};
+    if (!text.trim() || !j || typeof j !== "object" || Array.isArray(j)) throw new Error("服务返回数据异常，请重试");
     return j;
+  } catch (error) {
+    if (ctrl.signal.aborted) throw new Error("请求超时，请稍后重试");
+    if (error instanceof TypeError) throw new Error("网络异常，请检查连接后重试");
+    throw error;
   } finally {
     clearTimeout(timer);
   }
@@ -81,9 +94,16 @@ export const api = {
 
   // 认证
   login: (username, password) =>
-    request("/api/v1/auth/login", { method: "POST", body: JSON.stringify({ username, password }) }),
+    request("/api/v1/auth/login", { method: "POST", authenticated: false, body: JSON.stringify({ username, password }) }).then((j) => {
+      if (typeof j.token !== "string" || !j.token || !j.user || typeof j.user !== "object" || Array.isArray(j.user)) throw new Error("服务返回登录数据异常，请重试");
+      return j;
+    }),
   logout: () => request("/api/v1/auth/logout", { method: "POST" }),
-  me: async () => (await request("/api/v1/auth/me")).user,
+  me: async () => {
+    const j = await request("/api/v1/auth/me");
+    if (!j.user || typeof j.user !== "object" || Array.isArray(j.user)) throw new Error("服务返回身份数据异常，请重试");
+    return j.user;
+  },
   changePassword: (currentPassword, newPassword) =>
     request("/api/v1/auth/password", {
       method: "PUT",
@@ -99,13 +119,20 @@ export const api = {
   projects: (date) => request("/api/v1/private/projects" + qs({ date })).then((j) => j.data),
 
   // 花名册
-  users: (params) => request("/api/v1/system/users" + qs({ ...params, _ts: Date.now() })).then((j) => j.data),
+  users: (params) => request("/api/v1/system/users" + qs({ ...params, _ts: Date.now() })).then((j) => {
+    const data = j.data;
+    if (!data || !Array.isArray(data.list) || !Number.isInteger(data.total) || data.total < 0 || data.list.some((row) => !row || typeof row !== "object" || Array.isArray(row))) throw new Error("服务返回花名册数据异常，请重试");
+    return data;
+  }),
   peopleOptions: () => request("/api/v1/system/user-options/people").then((j) => j.data),
   createUser: (body) => request("/api/v1/system/users", { method: "POST", body: JSON.stringify(body) }),
   updateUser: (id, body) =>
     request(`/api/v1/system/users/${id}`, { method: "PUT", body: JSON.stringify(body) }),
   deleteUser: (id) => request(`/api/v1/system/users/${id}`, { method: "DELETE" }),
-  setUserStatus: (id) => request(`/api/v1/system/users/${id}/status`, { method: "PUT" }),
+  setUserStatus: (id) => request(`/api/v1/system/users/${id}/status`, { method: "PUT" }).then((j) => {
+    if (j.data?.status !== 0 && j.data?.status !== 1) throw new Error("服务返回账号状态异常，请刷新列表后重试");
+    return j.data;
+  }),
   resetUserPassword: (id, password) =>
     request(`/api/v1/system/users/${id}/password`, { method: "PUT", body: JSON.stringify({ password }) }),
   userPassword: (id) => request(`/api/v1/system/users/${id}/password`).then((j) => j.data),
@@ -216,7 +243,6 @@ export function buildRealMetrics(o) {
     monthPay: m.payAmt, monthPayPrev: m.prevPay, monthPayAll: null,
   };
 }
-
 ```
 
 ## system-console/src/store.jsx
@@ -230,6 +256,7 @@ const SUB_FACTOR = 1;
 const AuthContext = createContext(null);
 
 function readUser() {
+  if (!sessionStorage.getItem("dc_token")) return null;
   try {
     return JSON.parse(sessionStorage.getItem("dc_user") || "null");
   } catch {
@@ -241,6 +268,8 @@ export function ProtoProvider({ children }) {
   const [token, setToken] = useState(() => sessionStorage.getItem("dc_token") || "");
   const [user, setUser] = useState(readUser);
   const [ready, setReady] = useState(false);
+  const [authError, setAuthError] = useState("");
+  const [authAttempt, setAuthAttempt] = useState(0);
   const [pkg, setPkg] = useState("whole");
   const [dateMode, setDateMode] = useState("today");
 
@@ -250,29 +279,33 @@ export function ProtoProvider({ children }) {
       sessionStorage.removeItem("dc_user");
       setToken("");
       setUser(null);
+      setAuthError("");
     });
   }, []);
 
   useEffect(() => {
+    let active = true;
+    setAuthError("");
     if (!token) {
       setReady(true);
       return;
     }
+    setReady(false);
     api
       .me()
       .then((u) => {
+        if (!active) return;
         setUser(u);
         sessionStorage.setItem("dc_user", JSON.stringify(u));
+        window.dispatchEvent(new CustomEvent("dc:identity-ready", { detail: u }));
       })
-      .catch(() => {
-        // 仅清内存态：401 由 api.js 的 onUnauthorized 统一清 sessionStorage。
-        // 这里若清 sessionStorage，登录成功后的页面跳转会中断 in-flight /me，
-        // catch 会把刚写入的 token 删掉，导致新页面被踢回登录页。
-        setToken("");
-        setUser(null);
+      .catch((error) => {
+        if (!active || error.status === 401) return;
+        setAuthError(error.message || "身份验证失败，请重试");
       })
-      .finally(() => setReady(true));
-  }, [token]);
+      .finally(() => { if (active) setReady(true); });
+    return () => { active = false; };
+  }, [token, authAttempt]);
 
   const login = async (username, password) => {
     const res = await api.login(username, password);
@@ -318,7 +351,7 @@ export function ProtoProvider({ children }) {
   return (
     <AuthContext.Provider
       value={{
-        token, user, ready, login, logout, hasPerm, hasAny,
+        token, user, ready, authError, retryAuth: () => setAuthAttempt((value) => value + 1), login, logout, hasPerm, hasAny,
         role, pkg, setPkg, dateMode, setDateMode, canPkg, isSub, scale,
       }}
     >
@@ -330,7 +363,6 @@ export function ProtoProvider({ children }) {
 export function useProto() {
   return useContext(AuthContext);
 }
-
 ```
 
 ## system-console/vite.config.js
@@ -418,6 +450,8 @@ export default function SystemUsers() {
   const [roleOptions, setRoleOptions] = useState([]);
   const [peopleOptions, setPeopleOptions] = useState([]);
   const listRequestId = useRef(0);
+  const statusRequests = useRef(new Set());
+  const [pendingStatus, setPendingStatus] = useState(new Set());
 
   const [editOpen, setEditOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -446,7 +480,11 @@ export default function SystemUsers() {
         status: statusFilter === "" ? undefined : Number(statusFilter),
         role_id: roleFilter === "" ? undefined : Number(roleFilter),
       });
-      if (requestId === listRequestId.current) setData(d);
+      if (requestId === listRequestId.current) {
+        const lastPage = Math.max(1, Math.ceil(d.total / size));
+        if (page > lastPage) setPage(lastPage);
+        setData(d);
+      }
     } catch (e) {
       if (requestId === listRequestId.current) message.error(e.message);
     } finally {
@@ -490,6 +528,7 @@ export default function SystemUsers() {
   const saveUser = async () => {
     const v = await form.validateFields();
     setSaving(true);
+    let profileSaved = false;
     try {
       if (editing) {
         await api.updateUser(editing.id, {
@@ -497,6 +536,7 @@ export default function SystemUsers() {
           position: v.position, entry_date: v.entry_date || "", status: v.status,
           scope_mode: v.scope_mode, people_scope: v.people_scope || [],
         });
+        profileSaved = true;
         const previousRoleIds = (editing.roles || []).map((x) => x.id).sort((a, b) => a - b);
         const nextRoleIds = (v.role_ids || []).slice().sort((a, b) => a - b);
         if (hasPerm("system:user:role") && previousRoleIds.join(",") !== nextRoleIds.join(",")) {
@@ -526,7 +566,8 @@ export default function SystemUsers() {
       setEditOpen(false);
       load(!!editing);
     } catch (e) {
-      message.error(e.message);
+      message.error(profileSaved ? `资料已保存，角色保存失败：${e.message}` : e.message);
+      if (profileSaved) await load(true);
     } finally {
       setSaving(false);
     }
@@ -601,12 +642,19 @@ export default function SystemUsers() {
   };
 
   const toggleStatus = async (r) => {
+    if (statusRequests.current.has(r.id)) return;
+    statusRequests.current.add(r.id);
+    setPendingStatus(new Set(statusRequests.current));
     try {
       const d = await api.setUserStatus(r.id);
+      setData((current) => ({ ...current, list: current.list.map((item) => item.id === r.id ? { ...item, status: d.status } : item) }));
       message.success(d.status === 1 ? "已启用" : "已停用");
-      load();
+      await load();
     } catch (e) {
       message.error(e.message);
+    } finally {
+      statusRequests.current.delete(r.id);
+      setPendingStatus(new Set(statusRequests.current));
     }
   };
 
@@ -677,9 +725,11 @@ export default function SystemUsers() {
         width: 90,
         render: (_, r) => (
           <Switch
+            aria-label={`${r.name || r.username}的账号状态`}
+            loading={pendingStatus.has(r.id)}
             size="small"
             checked={r.status === 1}
-            disabled={!hasPerm("system:user:update") || r.id === user?.id}
+            disabled={pendingStatus.has(r.id) || !hasPerm("system:user:update") || r.id === user?.id}
             checkedChildren="启用"
             unCheckedChildren="停用"
             onChange={() => toggleStatus(r)}
@@ -694,10 +744,10 @@ export default function SystemUsers() {
         render: (_, r) => (
           <Space size={0}>
             {hasPerm("system:user:update") && (
-              <Button type="link" size="small" onClick={() => openEdit(r)}>编辑</Button>
+              <Button aria-label={`编辑${r.name || r.username}`} type="link" size="small" onClick={() => openEdit(r)}>编辑</Button>
             )}
             {hasPerm("system:user:resetpwd") && (
-              <Button type="link" size="small" onClick={() => openPwd(r)}>重置密码</Button>
+              <Button aria-label={`重置${r.name || r.username}的密码`} type="link" size="small" onClick={() => openPwd(r)}>重置密码</Button>
             )}
             {hasPerm("system:user:delete") && !r.is_super && r.id !== user?.id && (
               <Popconfirm title="确定删除该员工？" onConfirm={async () => {
@@ -714,14 +764,14 @@ export default function SystemUsers() {
                   message.error(e.message);
                 }
               }}>
-                <Button type="link" size="small" danger>删除</Button>
+                <Button aria-label={`删除${r.name || r.username}`} type="link" size="small" danger>删除</Button>
               </Popconfirm>
             )}
           </Space>
         ),
       },
     ],
-    [hasPerm, user, load, roleOptions, roleFilter, peopleOptions]
+    [hasPerm, user, load, roleOptions, roleFilter, peopleOptions, pendingStatus]
   );
 
   return (
@@ -745,7 +795,7 @@ export default function SystemUsers() {
           allowClear
           placeholder="状态"
           style={{ width: 110 }}
-          value={statusFilter || undefined}
+          value={statusFilter === "" ? undefined : statusFilter}
           onChange={(v) => { setPage(1); setStatusFilter(v ?? ""); }}
           options={[{ value: 1, label: "启用" }, { value: 0, label: "停用" }]}
         />
@@ -895,8 +945,12 @@ export default function SystemUsers() {
           />
           {pwdResetDone ? (
             <Button onClick={async () => {
-              await navigator.clipboard.writeText(pwdValue);
-              message.success("密码已复制");
+              try {
+                await navigator.clipboard.writeText(pwdValue);
+                message.success("密码已复制");
+              } catch {
+                message.error("复制失败，请手动选择并复制密码");
+              }
             }}>复制密码</Button>
           ) : (
             <Button onClick={() => setPwdValue(randPassword())}>随机生成</Button>
@@ -907,7 +961,6 @@ export default function SystemUsers() {
     </Card>
   );
 }
-
 ```
 
 ## main-app/vite.config.js

@@ -21,7 +21,7 @@ const ADMIN_NAV = [{"key":"/admin","label":"花名册","perm":"system:user:list"
 const MODULE_PERMS = {"dashboard":["dashboard:view","dashboard:private","dashboard:performance","assets:view"],"risk":["dashboard:chat_risk","dashboard:itemlog","personnel:review","assets:view"],"personnel":["personnel:view","personnel:archive","workorder:view","integration:registered_accounts","dashboard:reuse"],"business":["business:sdk_game_analysis","business:channel","business:revenue","business:contract"],"assets":["business:products","assets:view","assets:digital","assets:media","assets:sop"],"integration":["integration:view"],"finance":["finance:view","finance:cost","finance:revenue","finance:roi","finance:settlement"],"admin":["system:user:list","system:role:list","system:audit:list","system:config"]};
 
 function RequireAuth({ children }) {
-  const { ready, user } = useProto();
+  const { ready, user, authError, retryAuth } = useProto();
   if (!ready) {
     return (
       <div style={{ display: "flex", justifyContent: "center", paddingTop: 140 }}>
@@ -29,6 +29,12 @@ function RequireAuth({ children }) {
       </div>
     );
   }
+  if (authError) return (
+    <div role="alert" style={{ textAlign: "center", paddingTop: 120 }}>
+      <p>身份验证失败：{authError}</p>
+      <Button onClick={retryAuth}>重试身份验证</Button>
+    </div>
+  );
   if (!user) return <Navigate to="/login" replace />;
   const canSys = user.is_super ||
     (user.perms || []).includes("*") ||

@@ -6,6 +6,7 @@ const SUB_FACTOR = 1;
 const AuthContext = createContext(null);
 
 function readUser() {
+  if (!sessionStorage.getItem("dc_token")) return null;
   try {
     return JSON.parse(sessionStorage.getItem("dc_user") || "null");
   } catch {
@@ -17,6 +18,8 @@ export function ProtoProvider({ children }) {
   const [token, setToken] = useState(() => sessionStorage.getItem("dc_token") || "");
   const [user, setUser] = useState(readUser);
   const [ready, setReady] = useState(false);
+  const [authError, setAuthError] = useState("");
+  const [authAttempt, setAuthAttempt] = useState(0);
   const [pkg, setPkg] = useState("whole");
   const [dateMode, setDateMode] = useState("today");
 
@@ -26,29 +29,33 @@ export function ProtoProvider({ children }) {
       sessionStorage.removeItem("dc_user");
       setToken("");
       setUser(null);
+      setAuthError("");
     });
   }, []);
 
   useEffect(() => {
+    let active = true;
+    setAuthError("");
     if (!token) {
       setReady(true);
       return;
     }
+    setReady(false);
     api
       .me()
       .then((u) => {
+        if (!active) return;
         setUser(u);
         sessionStorage.setItem("dc_user", JSON.stringify(u));
+        window.dispatchEvent(new CustomEvent("dc:identity-ready", { detail: u }));
       })
-      .catch(() => {
-        // 仅清内存态：401 由 api.js 的 onUnauthorized 统一清 sessionStorage。
-        // 这里若清 sessionStorage，登录成功后的页面跳转会中断 in-flight /me，
-        // catch 会把刚写入的 token 删掉，导致新页面被踢回登录页。
-        setToken("");
-        setUser(null);
+      .catch((error) => {
+        if (!active || error.status === 401) return;
+        setAuthError(error.message || "身份验证失败，请重试");
       })
-      .finally(() => setReady(true));
-  }, [token]);
+      .finally(() => { if (active) setReady(true); });
+    return () => { active = false; };
+  }, [token, authAttempt]);
 
   const login = async (username, password) => {
     const res = await api.login(username, password);
@@ -94,7 +101,7 @@ export function ProtoProvider({ children }) {
   return (
     <AuthContext.Provider
       value={{
-        token, user, ready, login, logout, hasPerm, hasAny,
+        token, user, ready, authError, retryAuth: () => setAuthAttempt((value) => value + 1), login, logout, hasPerm, hasAny,
         role, pkg, setPkg, dateMode, setDateMode, canPkg, isSub, scale,
       }}
     >

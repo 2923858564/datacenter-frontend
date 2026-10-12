@@ -28,6 +28,8 @@ export default function SystemUsers() {
   const [roleOptions, setRoleOptions] = useState([]);
   const [peopleOptions, setPeopleOptions] = useState([]);
   const listRequestId = useRef(0);
+  const statusRequests = useRef(new Set());
+  const [pendingStatus, setPendingStatus] = useState(new Set());
 
   const [editOpen, setEditOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -56,7 +58,11 @@ export default function SystemUsers() {
         status: statusFilter === "" ? undefined : Number(statusFilter),
         role_id: roleFilter === "" ? undefined : Number(roleFilter),
       });
-      if (requestId === listRequestId.current) setData(d);
+      if (requestId === listRequestId.current) {
+        const lastPage = Math.max(1, Math.ceil(d.total / size));
+        if (page > lastPage) setPage(lastPage);
+        setData(d);
+      }
     } catch (e) {
       if (requestId === listRequestId.current) message.error(e.message);
     } finally {
@@ -100,6 +106,7 @@ export default function SystemUsers() {
   const saveUser = async () => {
     const v = await form.validateFields();
     setSaving(true);
+    let profileSaved = false;
     try {
       if (editing) {
         await api.updateUser(editing.id, {
@@ -107,6 +114,7 @@ export default function SystemUsers() {
           position: v.position, entry_date: v.entry_date || "", status: v.status,
           scope_mode: v.scope_mode, people_scope: v.people_scope || [],
         });
+        profileSaved = true;
         const previousRoleIds = (editing.roles || []).map((x) => x.id).sort((a, b) => a - b);
         const nextRoleIds = (v.role_ids || []).slice().sort((a, b) => a - b);
         if (hasPerm("system:user:role") && previousRoleIds.join(",") !== nextRoleIds.join(",")) {
@@ -136,7 +144,8 @@ export default function SystemUsers() {
       setEditOpen(false);
       load(!!editing);
     } catch (e) {
-      message.error(e.message);
+      message.error(profileSaved ? `资料已保存，角色保存失败：${e.message}` : e.message);
+      if (profileSaved) await load(true);
     } finally {
       setSaving(false);
     }
@@ -211,12 +220,19 @@ export default function SystemUsers() {
   };
 
   const toggleStatus = async (r) => {
+    if (statusRequests.current.has(r.id)) return;
+    statusRequests.current.add(r.id);
+    setPendingStatus(new Set(statusRequests.current));
     try {
       const d = await api.setUserStatus(r.id);
+      setData((current) => ({ ...current, list: current.list.map((item) => item.id === r.id ? { ...item, status: d.status } : item) }));
       message.success(d.status === 1 ? "已启用" : "已停用");
-      load();
+      await load();
     } catch (e) {
       message.error(e.message);
+    } finally {
+      statusRequests.current.delete(r.id);
+      setPendingStatus(new Set(statusRequests.current));
     }
   };
 
@@ -287,9 +303,11 @@ export default function SystemUsers() {
         width: 90,
         render: (_, r) => (
           <Switch
+            aria-label={`${r.name || r.username}的账号状态`}
+            loading={pendingStatus.has(r.id)}
             size="small"
             checked={r.status === 1}
-            disabled={!hasPerm("system:user:update") || r.id === user?.id}
+            disabled={pendingStatus.has(r.id) || !hasPerm("system:user:update") || r.id === user?.id}
             checkedChildren="启用"
             unCheckedChildren="停用"
             onChange={() => toggleStatus(r)}
@@ -304,10 +322,10 @@ export default function SystemUsers() {
         render: (_, r) => (
           <Space size={0}>
             {hasPerm("system:user:update") && (
-              <Button type="link" size="small" onClick={() => openEdit(r)}>编辑</Button>
+              <Button aria-label={`编辑${r.name || r.username}`} type="link" size="small" onClick={() => openEdit(r)}>编辑</Button>
             )}
             {hasPerm("system:user:resetpwd") && (
-              <Button type="link" size="small" onClick={() => openPwd(r)}>重置密码</Button>
+              <Button aria-label={`重置${r.name || r.username}的密码`} type="link" size="small" onClick={() => openPwd(r)}>重置密码</Button>
             )}
             {hasPerm("system:user:delete") && !r.is_super && r.id !== user?.id && (
               <Popconfirm title="确定删除该员工？" onConfirm={async () => {
@@ -324,14 +342,14 @@ export default function SystemUsers() {
                   message.error(e.message);
                 }
               }}>
-                <Button type="link" size="small" danger>删除</Button>
+                <Button aria-label={`删除${r.name || r.username}`} type="link" size="small" danger>删除</Button>
               </Popconfirm>
             )}
           </Space>
         ),
       },
     ],
-    [hasPerm, user, load, roleOptions, roleFilter, peopleOptions]
+    [hasPerm, user, load, roleOptions, roleFilter, peopleOptions, pendingStatus]
   );
 
   return (
@@ -355,7 +373,7 @@ export default function SystemUsers() {
           allowClear
           placeholder="状态"
           style={{ width: 110 }}
-          value={statusFilter || undefined}
+          value={statusFilter === "" ? undefined : statusFilter}
           onChange={(v) => { setPage(1); setStatusFilter(v ?? ""); }}
           options={[{ value: 1, label: "启用" }, { value: 0, label: "停用" }]}
         />
@@ -505,8 +523,12 @@ export default function SystemUsers() {
           />
           {pwdResetDone ? (
             <Button onClick={async () => {
-              await navigator.clipboard.writeText(pwdValue);
-              message.success("密码已复制");
+              try {
+                await navigator.clipboard.writeText(pwdValue);
+                message.success("密码已复制");
+              } catch {
+                message.error("复制失败，请手动选择并复制密码");
+              }
             }}>复制密码</Button>
           ) : (
             <Button onClick={() => setPwdValue(randPassword())}>随机生成</Button>

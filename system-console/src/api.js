@@ -26,22 +26,35 @@ function readableApiError(detail, status, method) {
 }
 
 async function request(path, opts = {}) {
-  const { timeoutMs = 15000, ...fetchOptions } = opts;
+  const { timeoutMs = 15000, authenticated = true, ...fetchOptions } = opts;
   const method = (fetchOptions.method || "GET").toUpperCase();
   const token = sessionStorage.getItem("dc_token") || "";
-  const headers = { "Content-Type": "application/json", ...(opts.headers || {}) };
-  if (token) headers.Authorization = `Bearer ${token}`;
+  const headers = new Headers(fetchOptions.headers);
+  if (fetchOptions.body != null && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+  if (authenticated && token) headers.set("Authorization", `Bearer ${token}`);
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
     const res = await fetch(path, { ...fetchOptions, headers, signal: ctrl.signal });
-    if (res.status === 401) {
-      if (onUnauthorized) onUnauthorized();
-      throw new Error("登录已过期，请重新登录");
+    if (res.status === 401 && authenticated) {
+      if (onUnauthorized && (sessionStorage.getItem("dc_token") || "") === token) onUnauthorized();
+      throw Object.assign(new Error("登录已过期，请重新登录"), { status: 401 });
     }
-    const j = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(readableApiError(j.detail || j.message, res.status, method));
+    const text = await res.text();
+    let j = {};
+    try {
+      if (text.trim()) j = JSON.parse(text);
+    } catch {
+      if (res.ok) throw new Error("服务返回数据异常，请重试");
+    }
+    if (!res.ok) throw Object.assign(new Error(readableApiError(j?.detail || j?.message, res.status, method)), { status: res.status });
+    if (res.status === 204 || (!text.trim() && method !== "GET")) return {};
+    if (!text.trim() || !j || typeof j !== "object" || Array.isArray(j)) throw new Error("服务返回数据异常，请重试");
     return j;
+  } catch (error) {
+    if (ctrl.signal.aborted) throw new Error("请求超时，请稍后重试");
+    if (error instanceof TypeError) throw new Error("网络异常，请检查连接后重试");
+    throw error;
   } finally {
     clearTimeout(timer);
   }
@@ -74,9 +87,16 @@ export const api = {
 
   // 认证
   login: (username, password) =>
-    request("/api/v1/auth/login", { method: "POST", body: JSON.stringify({ username, password }) }),
+    request("/api/v1/auth/login", { method: "POST", authenticated: false, body: JSON.stringify({ username, password }) }).then((j) => {
+      if (typeof j.token !== "string" || !j.token || !j.user || typeof j.user !== "object" || Array.isArray(j.user)) throw new Error("服务返回登录数据异常，请重试");
+      return j;
+    }),
   logout: () => request("/api/v1/auth/logout", { method: "POST" }),
-  me: async () => (await request("/api/v1/auth/me")).user,
+  me: async () => {
+    const j = await request("/api/v1/auth/me");
+    if (!j.user || typeof j.user !== "object" || Array.isArray(j.user)) throw new Error("服务返回身份数据异常，请重试");
+    return j.user;
+  },
   changePassword: (currentPassword, newPassword) =>
     request("/api/v1/auth/password", {
       method: "PUT",
@@ -92,13 +112,20 @@ export const api = {
   projects: (date) => request("/api/v1/private/projects" + qs({ date })).then((j) => j.data),
 
   // 花名册
-  users: (params) => request("/api/v1/system/users" + qs({ ...params, _ts: Date.now() })).then((j) => j.data),
+  users: (params) => request("/api/v1/system/users" + qs({ ...params, _ts: Date.now() })).then((j) => {
+    const data = j.data;
+    if (!data || !Array.isArray(data.list) || !Number.isInteger(data.total) || data.total < 0 || data.list.some((row) => !row || typeof row !== "object" || Array.isArray(row))) throw new Error("服务返回花名册数据异常，请重试");
+    return data;
+  }),
   peopleOptions: () => request("/api/v1/system/user-options/people").then((j) => j.data),
   createUser: (body) => request("/api/v1/system/users", { method: "POST", body: JSON.stringify(body) }),
   updateUser: (id, body) =>
     request(`/api/v1/system/users/${id}`, { method: "PUT", body: JSON.stringify(body) }),
   deleteUser: (id) => request(`/api/v1/system/users/${id}`, { method: "DELETE" }),
-  setUserStatus: (id) => request(`/api/v1/system/users/${id}/status`, { method: "PUT" }),
+  setUserStatus: (id) => request(`/api/v1/system/users/${id}/status`, { method: "PUT" }).then((j) => {
+    if (j.data?.status !== 0 && j.data?.status !== 1) throw new Error("服务返回账号状态异常，请刷新列表后重试");
+    return j.data;
+  }),
   resetUserPassword: (id, password) =>
     request(`/api/v1/system/users/${id}/password`, { method: "PUT", body: JSON.stringify({ password }) }),
   userPassword: (id) => request(`/api/v1/system/users/${id}/password`).then((j) => j.data),

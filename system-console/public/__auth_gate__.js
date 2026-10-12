@@ -288,7 +288,7 @@
     var requestMethod = String(opts.method || "GET").toUpperCase();
     var requestPath = "";
     try { requestPath = new URL(u, location.href).pathname; } catch (e) {}
-    if (t && isApi && requestMethod === "GET" && requestPath === "/api/v1/auth/me") {
+    if (!systemConsole && t && isApi && requestMethod === "GET" && requestPath === "/api/v1/auth/me") {
       return loadAuthMe(u, opts, headers, t);
     }
     var snapshotPayload = coreDashboardSnapshotPayload(u, coreDashboardSnapshotData);
@@ -743,24 +743,34 @@
     setInterval(layoutEntry, 500);
   }
 
+  function acceptIdentity(u) {
+    var savedScope = sessionStorage.getItem(VIEW_SCOPE_KEY);
+    if ((u.default_scope || u.scope) !== "all") sessionStorage.setItem(VIEW_SCOPE_KEY, "sub");
+    else if (savedScope !== "all" && savedScope !== "sub") sessionStorage.setItem(VIEW_SCOPE_KEY, "all");
+    window.__DC_USER__ = u;
+    currentPerms = u.is_super ? ["*"] : (u.perms || []);
+    window.__DC_NAVIGATION__.ready = true;
+    window.dispatchEvent(new Event("dc:navigation-ready"));
+  }
+
+  if (systemConsole) {
+    window.addEventListener("dc:identity-ready", function (event) {
+      if (!token()) return;
+      acceptIdentity(event.detail);
+      if (window.self === window.top && new URLSearchParams(location.search).get("embedded") !== "1") installLCChatEntry();
+      enforceRoute();
+    });
+  }
+
   function boot() {
+    // 管理端状态层统一验证身份，避免两个请求互相清除有效会话。
+    if (systemConsole) return;
     if (!token()) { redirectLogin(); return; }
     fetch("/api/v1/auth/me", { headers: { Authorization: "Bearer " + token() } })
       .then(function (r) { if (!r.ok) throw new Error("unauth"); return r.json(); })
       .then(function (j) {
         var u = j.user;
-        var savedScope = sessionStorage.getItem(VIEW_SCOPE_KEY);
-        if ((u.default_scope || u.scope) !== "all") sessionStorage.setItem(VIEW_SCOPE_KEY, "sub");
-        else if (savedScope !== "all" && savedScope !== "sub") sessionStorage.setItem(VIEW_SCOPE_KEY, "all");
-        window.__DC_USER__ = u;
-        currentPerms = u.is_super ? ["*"] : (u.perms || []);
-        window.__DC_NAVIGATION__.ready = true;
-        window.dispatchEvent(new Event("dc:navigation-ready"));
-        if (systemConsole) {
-          if (window.self === window.top && new URLSearchParams(location.search).get("embedded") !== "1") installLCChatEntry();
-          enforceRoute();
-          return;
-        }
+        acceptIdentity(u);
         installRealUserUI(u);
         installDashboardChromeCleanup();
         installDataScopeSwitch(u);
