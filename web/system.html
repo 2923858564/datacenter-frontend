@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>系统管理 · 聚玩经营数据中台</title>
+    <style>
+      html, body { margin: 0; padding: 0; background: #f5f6f8; }
+      body { animation: dc-fade-in .18s ease; }
+      @keyframes dc-fade-in { from { opacity: 0; } to { opacity: 1; } }
+      #dc-boot-header {
+        position: fixed; top: 0; left: 0; right: 0; height: 56px; z-index: 99;
+        background: #001529; display: flex; align-items: center;
+        padding: 0 16px; color: #fff; font-size: 18px; font-weight: 800;
+        letter-spacing: 2px; font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+      }
+      #dc-boot-header .boot-tip { margin-left: auto; font-size: 12px; font-weight: 400; color: rgba(255,255,255,.55); letter-spacing: 0; }
+      html.dc-embedded-admin #dc-boot-header { display: none; }
+    </style>
+    <script>
+      document.documentElement.setAttribute("data-dc-system-console", "");
+      if (window.self !== window.top || new URLSearchParams(location.search).get("embedded") === "1") {
+        document.documentElement.classList.add("dc-embedded-admin");
+      }
+    </script>
+    <script src="/__auth_gate__.js?v=20260930-admin-smooth-v1"></script>
+    <script type="module" crossorigin src="/assets/system-CFUHHDku.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/system-CyJithkP.css">
+  </head>
+  <body>
+    <div id="dc-boot-header">
+      聚玩互动
+      <span class="boot-tip">加载中…</span>
+    </div>
+    <div id="root"></div>
+  </body>
+</html>

@@ -1,0 +1,1 @@
+import{p as e}from"./InsightRank-UG5EYt59.js?v=20260927-reuse-date-range-v11";function t(t){let n={};return t!=null&&(n.projectId=t),e({url:`/common/filter-options`,method:`get`,params:n})}export{t};

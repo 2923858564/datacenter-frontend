@@ -1,0 +1,7 @@
+node_modules/
+system-console/dist/
+system-console/dist-dictionary/
+.env
+.env.*
+*.log
+.DS_Store

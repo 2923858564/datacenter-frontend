@@ -1,0 +1,5613 @@
+<!doctype html>
+<html lang="zh-CN" data-page-node-id="AFLG9dCliUZuhP8vp3kJlZ">
+<head data-page-node-id="I5TCo3rzDPns4jzSebg4LF">
+<meta charset="utf-8" data-page-node-id="SbUBvzbbCLc08lCZ0LuBhV">
+<meta name="viewport" content="width=device-width, initial-scale=1" data-page-node-id="AtMucL0NK2Uu2y46da3AWj">
+<title>企微对话（原型演示）</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}button,input,select,textarea{font-family:inherit}button{border:0;background:none;color:inherit;cursor:pointer}
+/* ============ 企微蓝主题（对齐 qywx 布局：主色 #3370FF，头像首色蓝，发送气泡蓝底白字） ============ */
+.wx-app{--wx-primary:#3370FF;--wx-primary-rgb:51,112,255;--wx-win-bg:#F5F6F8;--wx-list-bg:#EAEBEF;--wx-rail-bg:#2B2F38;--wx-search-border:#C0C0C0;--wx-divider:#D5D5D5;--wx-v-divider:#E6E6E6;--wx-bubble-sent:#3370FF;--wx-bubble-recv:#FFFFFF;--wx-sel-bg:#3370FF;--wx-text:#1A1A1A;--wx-text2:#8A8F99;--wx-text3:#767676;
+--panel:#fff;--panel2:#f5f6f8;--input:#f0f1f4;--border:#e3e5ea;--muted:#8a8f99;--blue:#3370FF;--gold:#a87614;--gold-s:#fbf3df;--red:#e64340;--red-s:#fdecea;--wblue:#3370FF;--blue-s:#eaf0ff;--purple:#7b5fc0;--purple-s:#f1edfa;--green:#00b42a;--green-s:rgba(0,180,42,.12);
+display:flex;height:100vh;overflow:hidden;background:var(--wx-win-bg);color:var(--wx-text);font:14px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+.wx-app[data-mode=dark]{--wx-primary:#4C86FF;--wx-primary-rgb:76,134,255;--wx-win-bg:#1F1F1F;--wx-list-bg:#2A2A2C;--wx-rail-bg:#17181C;--wx-search-border:#3A3A3A;--wx-divider:#2C2C2C;--wx-v-divider:#2C2C2C;--wx-bubble-sent:#2F6FE0;--wx-bubble-recv:#2F2F30;--wx-sel-bg:#2F6FE0;--wx-text:#DBDBDB;--wx-text2:#9A9A9A;--wx-text3:#767676;
+--panel:#232323;--panel2:#2b2b2b;--input:#2b2b2b;--border:#333;--muted:#9d9d9d;--gold-s:#3a3018;--red-s:#3a2322;--blue-s:#20294d;--purple-s:#2b2440;--gold:#e0b25a;--red:#ff6f6b;--wblue:#8ba4d8;--green:#3ecf7f;--green-s:rgba(0,180,42,.18)}
+.icon-rail{width:56px;min-width:56px;flex-shrink:0;background:var(--wx-rail-bg);display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:2px}
+.rri{position:relative;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#9AA0AC;transition:background .15s}
+.rri svg{width:20px;height:20px}
+.rri:hover{background:rgba(255,255,255,.10);color:#E6E9EF}
+.rri.active{color:#fff;background:rgba(51,112,255,.28)}
+.rri.active svg{fill:currentColor;fill-opacity:.22}
+.rri .rb{position:absolute;top:2px;right:0;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#F53F3F;color:#fff;font-size:10px;line-height:16px;text-align:center}
+.rri-div{width:24px;height:1px;background:rgba(255,255,255,.14);margin:6px 0}
+.rri.theme{margin-top:auto}
+.emp-entry{position:relative;width:38px;height:38px;border-radius:8px;margin-bottom:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:600;box-shadow:0 0 0 2px rgba(51,112,255,.5)}
+.emp-entry .ed{position:absolute;right:-2px;bottom:-2px;width:11px;height:11px;border-radius:50%;border:2px solid var(--wx-rail-bg)}
+.emp-entry .ed.on{background:#00b42a}.emp-entry .ed.off{background:#CCC}
+.emp-entry .eb{position:absolute;top:-4px;right:-6px;min-width:16px;height:15px;padding:0 3px;border-radius:8px;background:#F53F3F;color:#fff;font-size:9px;line-height:15px;text-align:center}
+.acc-pop{position:absolute;left:56px;top:0;bottom:0;width:264px;background:var(--panel);border-right:1px solid var(--border);box-shadow:6px 0 24px rgba(0,0,0,.14);z-index:80;display:none;flex-direction:column}
+.acc-pop.open{display:flex}
+.ap-head{padding:12px 14px 8px;flex-shrink:0}
+.ap-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.ap-title .qw{font-size:10px;color:#fff;background:var(--wx-primary);border-radius:4px;padding:1px 6px;font-weight:500}
+.ap-head input{width:100%;height:28px;margin-top:8px;padding:0 8px;font-size:12px;border:1px solid var(--wx-search-border);border-radius:5px;background:var(--input);color:var(--wx-text);outline:none}
+.ap-list{flex:1;overflow-y:auto;padding:2px 0 6px}
+.ap-org{font-size:12px;font-weight:700;color:var(--wx-text);padding:9px 14px 4px 22px;position:relative}
+.ap-org::before{content:'';position:absolute;left:14px;top:12px;width:3px;height:13px;background:var(--wx-primary);border-radius:2px}
+.ap-emp{display:flex;gap:9px;align-items:center;padding:7px 14px;margin:0 6px;border-radius:6px;cursor:pointer}
+.ap-emp:hover{background:var(--input)}
+.ap-emp.active{background:var(--wx-sel-bg)}
+.ap-emp.active .ae-n{color:#fff}.ap-emp.active .ae-t{color:rgba(255,255,255,.75)}
+.ae-av{position:relative;width:40px;height:40px;min-width:40px;border-radius:6px;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600}
+.ae-bdg{position:absolute;top:-5px;right:-7px;min-width:16px;height:15px;padding:0 4px;border-radius:8px;background:#f53f3f;color:#fff;font-size:9px;line-height:15px;text-align:center}
+.ae-dot{position:absolute;right:-2px;bottom:-2px;width:11px;height:11px;border-radius:50%;border:2px solid var(--panel)}
+.ae-dot.on{background:#00b42a}.ae-dot.off{background:#CCC}
+.ae-n{font-size:13px;font-weight:500}.ae-t{font-size:11px;color:var(--wx-text2)}
+.ap-status{display:flex;justify-content:space-around;padding:7px 0;border-top:1px solid var(--border);font-size:11px;color:var(--wx-text2);flex-shrink:0}
+.ap-status span{cursor:pointer;padding:2px 8px;border-radius:3px}
+.ap-status span.active{color:var(--wx-primary);font-weight:600}
+.ap-status .num{font-weight:600;color:var(--wx-text)}
+.list-panel{width:288px;min-width:288px;flex-shrink:0;background:var(--wx-list-bg);display:flex;flex-direction:column}
+.lp-search{display:flex;align-items:center;gap:6px;margin:12px 46px 8px 12px;padding:0 8px;height:32px;background:#fff;border:1px solid #DCDCE0;border-radius:6px;position:relative}
+.wx-app[data-mode=dark] .lp-search{background:#2A2A2A;border-color:#3A3A3A}
+.lp-search:focus-within{border-color:var(--wx-primary)}
+.lp-search svg{width:14px;height:14px;color:var(--wx-text3);flex-shrink:0}
+.lp-search input{flex:1;border:0;outline:0;font-size:12px;background:transparent;color:var(--wx-text);min-width:0}
+.lp-plus{position:absolute;right:-34px;top:3px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;color:#59595A;cursor:pointer;border-radius:4px}
+.lp-plus svg{width:17px;height:17px}
+.lp-plus:hover{background:rgba(0,0,0,.06)}
+.lp-menu{display:none;position:absolute;top:36px;right:-34px;min-width:158px;background:var(--panel);border:1px solid var(--border);border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.15);z-index:60;padding:4px 0}
+.lp-menu.open{display:block}
+.lp-menu div{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;cursor:pointer;white-space:nowrap}
+.lp-menu div:hover{background:var(--input)}
+.lp-menu svg{width:17px;height:17px}
+.lp-filters{display:flex;flex-wrap:wrap;gap:4px 6px;padding:2px 12px 8px;flex-shrink:0}
+.lpf{font-size:12px;font-weight:600;color:var(--wx-text2);cursor:pointer;padding:2px 7px;border-radius:4px}
+.lpf.active{background:rgba(var(--wx-primary-rgb),.14);color:var(--wx-primary)}
+.lp-items{flex:1;overflow-y:auto}
+.ci{display:flex;gap:10px;align-items:center;height:66px;padding:0 12px;cursor:pointer;border-bottom:1px solid rgba(0,0,0,.03)}
+.wx-app[data-mode=dark] .ci{border-bottom-color:#2A2A2A}
+.ci:hover:not(.sel){background:rgba(0,0,0,.04)}
+.ci.sel{background:var(--wx-sel-bg)}
+.ci.sel .nm,.ci.sel .pv,.ci.sel .tm,.ci.sel .sub{color:#fff}
+.ci.sel .star{background:rgba(255,255,255,.24)!important;color:#fff!important}
+.ci .av{position:relative;width:42px;height:42px;min-width:42px;border-radius:5px;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600}
+.ci .bdg{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#f44336;color:#fff;font-size:11px;line-height:18px;text-align:center}
+.ci .mn{flex:1;min-width:0}
+.ci .tp{display:flex;align-items:center;gap:5px}
+.ci .star{font-size:10px;font-weight:600;padding:0 5px;border-radius:3px;flex-shrink:0;line-height:16px}
+.ci .nm{flex:1;min-width:0;font-size:14px;color:var(--wx-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ci .tm{font-size:10px;color:var(--wx-text3);flex-shrink:0}
+.ci .pv{margin-top:5px;font-size:12px;color:var(--wx-text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vdiv{width:1px;background:var(--wx-v-divider);flex-shrink:0}
+.content{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--wx-win-bg)}
+.chead{height:56px;padding:0 16px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.chead .n{font-size:15px;font-weight:500}
+.chead .cstar{font-size:11px;font-weight:600;padding:1px 7px;border-radius:4px}
+.chead .csub{font-size:11px;color:var(--wx-text2)}
+.chead .sp{flex:1}
+.hbtn{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--wx-text2)}
+.hbtn:hover{background:rgba(0,0,0,.06)}
+.hbtn svg{width:18px;height:18px}
+.gmw{position:relative}
+.gmw .gma{display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:4px;font-size:12px;color:var(--wx-primary);cursor:pointer}
+.gmw .gma:hover{background:rgba(var(--wx-primary-rgb),.1)}
+.gmenu{display:none;position:absolute;top:30px;right:0;background:var(--panel);border:1px solid var(--border);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);z-index:80;min-width:132px;padding:4px}
+.gmenu.open{display:block}
+.gmenu div{padding:7px 10px;font-size:12px;border-radius:6px;cursor:pointer;white-space:nowrap}
+.gmenu div:hover{background:var(--blue-s);color:var(--wx-primary)}
+.chead-div{height:1px;background:#ECECEE;flex-shrink:0}
+.wx-app[data-mode=dark] .chead-div{background:#2C2C2C}
+.msgs{flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:4px}
+.day{align-self:center;font-size:10px;color:var(--wx-text3);margin:6px 0}
+.m{display:flex;gap:10px;align-items:flex-start;padding:4px 0}
+.m .av{width:38px;height:38px;min-width:38px;border-radius:6px;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;background:var(--wx-primary)}
+.m .who{font-size:11px;color:var(--wx-text3);margin-bottom:3px}
+.m .body{max-width:62%;min-width:0;display:flex;flex-direction:column}
+.m.sent{flex-direction:row-reverse}
+.m.sent .body{align-items:flex-end}
+.bub{position:relative;padding:8px 12px;border-radius:6px;background:var(--wx-bubble-recv);color:var(--wx-text);font-size:13px;line-height:1.5;word-break:break-word;box-shadow:0 1px 1px rgba(0,0,0,.04)}
+.bub::before{content:'';position:absolute;top:12px;left:-3px;width:8px;height:8px;background:inherit;transform:rotate(45deg)}
+.m.sent .bub{background:var(--wx-bubble-sent);color:#fff}
+.m.sent .bub::before{left:auto;right:-3px}
+.imgmsg{width:220px;max-width:240px;border-radius:8px;background:#111;color:#666;height:120px;display:flex;align-items:center;justify-content:center;font-size:11px;box-shadow:none}
+.imgmsg::before{display:none}
+.mtime{font-size:9px;color:var(--wx-text3);margin-top:3px}
+.m.sent .mtime{text-align:right}
+.in-div{height:1px;background:var(--wx-divider);flex-shrink:0}
+.in-area{padding:4px 0 12px;flex-shrink:0}
+.toolbar{display:flex;gap:4px;padding:4px 12px}
+.tb{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--wx-text2)}
+.tb:hover{background:rgba(0,0,0,.06);color:var(--wx-text)}
+.tb svg{width:18px;height:18px}
+.tbox{margin:0 12px;padding:8px 10px;background:var(--wx-win-bg);border:1px solid #D0D0D4;border-radius:8px}
+.wx-app[data-mode=dark] .tbox{border-color:#333}
+.tbox textarea{width:100%;border:0;outline:0;resize:none;background:transparent;height:64px;font-size:13px;color:var(--wx-text)}
+.sendrow{display:flex;justify-content:flex-end;padding:8px 12px 0}
+.sendbtn{background:var(--wx-primary);color:#fff;border-radius:4px;padding:6px 20px;font-size:13px;cursor:pointer}
+.sendbtn:hover{opacity:.9}
+.sb{width:320px;min-width:300px;flex:none;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;transition:width .2s}
+body.nosb .sb{width:0;min-width:0;border:0;overflow:hidden}
+.sb-in{width:320px;display:flex;flex-direction:column;height:100%}
+.arch{padding:13px 14px 11px;flex-shrink:0}
+.hd{display:flex;gap:11px;align-items:center}
+.hd .av{width:46px;height:46px;border-radius:8px;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;flex:none}
+.hd .nm{font-size:16px;font-weight:600;display:flex;align-items:center;gap:6px}
+.hd .nm .ed{font-size:12px;color:var(--wx-text2);cursor:pointer}
+.hd .rm{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.55}
+.hd .rm b{color:var(--wx-text);font-weight:500}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.tg{font-size:10px;padding:2px 8px;border-radius:9px;color:var(--wblue);background:var(--blue-s)}
+.tg.gold{color:var(--gold);background:var(--gold-s)}.tg.green{color:var(--green);background:var(--green-s)}.tg.purple{color:var(--purple);background:var(--purple-s)}.tg.red{color:var(--red);background:var(--red-s)}.tg.gray{color:var(--muted);background:var(--input)}
+.role-sec{display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:9px;border-top:1px solid var(--border)}
+.role-sec .lk{font-size:11px;color:var(--muted);flex-shrink:0}
+.role-val{flex:1;min-width:0;font-size:12px;font-weight:600;background:var(--input);border:1px solid var(--border);border-radius:5px;padding:3px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plat{display:flex;gap:4px;flex-shrink:0}
+.plat span{font-size:10px;padding:2px 7px;border-radius:4px;background:var(--input);color:var(--muted);cursor:pointer;border:1px solid var(--border)}
+.plat span.on{background:var(--blue-s);color:var(--wx-primary);border-color:var(--wx-primary);font-weight:600}
+.sbtabs{display:flex;border-top:1px solid var(--border);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0}
+.sbtabs button{flex:1;font-size:12px;padding:9px 0 8px;color:var(--muted);position:relative;white-space:nowrap}
+.sbtabs button.on{color:var(--wx-primary);font-weight:600}
+.sbtabs button.on::after{content:'';position:absolute;left:25%;right:25%;bottom:0;height:2px;border-radius:2px;background:var(--wx-primary)}
+.sbbody{flex:1;overflow-y:auto;padding:11px 13px}
+.sect{font-size:11px;color:var(--muted);margin:13px 0 7px}
+.sect:first-child{margin-top:0}
+.card{display:grid;grid-template-columns:repeat(2,1fr);gap:9px 12px}
+.f{min-width:0}.f .k{font-size:10px;color:var(--muted)}.f .v{font-size:12px;font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.f .v.gold{color:var(--gold)}
+.note{font-size:10px;color:var(--muted);line-height:1.55;margin-top:9px}
+.gauge{display:flex;align-items:center;gap:12px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.gauge .gi{flex:1;min-width:0}
+.gauge .gt{font-size:12px;font-weight:600}
+.gauge .gd{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.5}
+.cloud{display:flex;flex-wrap:wrap;gap:7px 9px;align-items:baseline;padding:4px 2px}
+.wd{cursor:pointer;font-weight:600;transition:opacity .15s}
+.wd:hover{opacity:.7}
+.qc{border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.qc .qh{padding:7px 10px;background:var(--blue-s);color:var(--wx-primary);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:space-between}
+.qc .qh .qs{font-size:15px}
+.qc .qb{padding:4px 10px 8px}
+.qi{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px dashed var(--border);font-size:11px;line-height:1.5}
+.qi:last-child{border:0}
+.qi .st{font-size:9px;padding:1px 6px;border-radius:4px;flex-shrink:0;margin-top:1px;font-weight:600}
+.qi .st.pass{color:var(--green);background:var(--green-s)}
+.qi .st.warn{color:var(--gold);background:var(--gold-s)}
+.qi .st.risk{color:var(--red);background:var(--red-s)}
+.qi .dim{color:var(--muted);flex-shrink:0;width:32px}
+.tl{position:relative;padding-left:16px}
+.tl::before{content:'';position:absolute;left:4px;top:4px;bottom:8px;width:1px;background:var(--border)}
+.tli{position:relative;padding:0 0 13px}
+.tli::before{content:'';position:absolute;left:-14px;top:4px;width:9px;height:9px;border-radius:50%;background:var(--wx-primary);box-shadow:0 0 0 2px var(--panel)}
+.tli .tt{font-size:12px;line-height:1.5}
+.tli .tm{font-size:10px;color:var(--muted);margin-top:2px}
+.tli .ty{font-size:9px;padding:1px 6px;border-radius:4px;margin-right:5px;font-weight:600}
+.tladd{display:flex;gap:6px;margin-bottom:12px}
+.tladd input{flex:1;height:28px;border:1px solid var(--border);border-radius:6px;background:var(--input);padding:0 8px;font-size:11px;color:var(--wx-text);outline:none}
+.tladd button{padding:0 12px;border-radius:6px;background:var(--wx-primary);color:#fff;font-size:11px}
+.tagbox{display:flex;flex-wrap:wrap;gap:6px}
+.tagchip{font-size:11px;padding:3px 10px;border-radius:14px;border:1px solid var(--border);background:var(--input);color:var(--muted);cursor:pointer}
+.tagchip.on{color:#fff;background:var(--wx-primary);border-color:var(--wx-primary)}
+.sc-cat{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px}
+.scc{font-size:10px;padding:3px 9px;border-radius:14px;background:var(--input);color:var(--muted);border:1px solid var(--border);cursor:pointer}
+.scc.on{color:var(--wx-primary);border-color:var(--wx-primary);background:var(--blue-s)}
+.sc{border:1px solid var(--border);border-radius:9px;padding:9px 10px;margin-bottom:8px;background:var(--panel2)}
+.sc .sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.sc .sn{font-size:11px;font-weight:600}
+.sc .use{font-size:10px;color:var(--wx-primary);cursor:pointer}
+.sc .stx{font-size:11px;color:var(--wx-text2);line-height:1.55}
+.sc .var{color:var(--wx-primary);background:var(--blue-s);border-radius:3px;padding:0 3px}
+.mrow{display:flex;gap:8px;align-items:center;padding:6px;border-radius:8px;cursor:pointer}
+.mrow:hover{background:var(--input)}
+.mrow .av{width:32px;height:32px;border-radius:5px;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex:none}
+.mrow .nm{font-size:12px;font-weight:500}.mrow .sub2{font-size:10px;color:var(--muted)}
+.mk{font-size:9px;padding:1px 6px;border-radius:9px;margin-left:4px}
+.mk.admin{color:var(--wblue);background:var(--blue-s)}.mk.hv{color:var(--gold);background:var(--gold-s)}
+.chips2{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.chip{font-size:10px;padding:3px 9px;border-radius:14px;background:var(--input);color:var(--muted);border:1px solid var(--border);cursor:pointer}
+.chip.on{color:var(--wx-primary);border-color:var(--wx-primary);background:var(--blue-s)}
+.kpi{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.tk{background:var(--panel2);border:1px solid var(--border);border-radius:9px;padding:8px 9px}.tk .k{font-size:10px;color:var(--muted)}.tk .v{font-size:16px;font-weight:700;margin-top:2px}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;font-size:12px;padding:7px 15px;border-radius:16px;opacity:0;pointer-events:none;transition:.2s;z-index:200}
+.toast.show{opacity:1}.toast.warn{background:var(--red)}
+.hint{position:fixed;left:70px;bottom:14px;z-index:70;font-size:11px;color:#fff;background:rgba(51,112,255,.92);padding:5px 11px;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+/* ============ 客户动态 · 小程序会员等级/积分 ============ */
+.sect .slk{float:right;font-size:10px;color:var(--wx-primary);cursor:pointer;font-weight:500}
+.sect .slk:hover{text-decoration:underline}
+.thline{font-size:10px;color:var(--muted);margin-top:6px;line-height:1.6;background:var(--panel2);border:1px dashed var(--border);border-radius:7px;padding:6px 8px}
+.thline b{color:var(--wx-text2);font-weight:600}
+.memcard{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px 11px}
+.memcard .mbg{width:40px;height:40px;flex:none;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--panel);border:1px solid var(--border)}
+.memcard .mmd{flex:1;min-width:0}
+.memcard .mlv{font-size:12px;font-weight:700;display:flex;align-items:center;gap:5px}
+.memcard .mlv em{font-style:normal;font-size:9px;font-weight:600;padding:1px 6px;border-radius:8px}
+.memcard .mrt{font-size:10px;color:var(--muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.memcard .mbar{height:4px;background:var(--border);border-radius:2px;margin-top:6px;overflow:hidden}
+.memcard .mbar i{display:block;height:100%;border-radius:2px}
+.memcard .mup{font-size:9px;color:var(--muted);margin-top:3px}
+.memcard .mpt{flex:none;text-align:right}
+.memcard .mpt .p1{font-size:15px;font-weight:700;color:var(--gold);line-height:1.1}
+.memcard .mpt .p2{font-size:9px;color:var(--muted)}
+/* ============ 参数管理弹窗 · 项目册判定口径 ============ */
+.pm-mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:120;display:none;align-items:center;justify-content:center;padding:24px}
+.pm-mask.open{display:flex}
+.pm-panel{width:100%;max-width:860px;max-height:100%;background:var(--panel);border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.28);display:flex;flex-direction:column;overflow:hidden}
+.pm-hd{padding:14px 18px 11px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px}
+.pm-hd .pt{font-size:14px;font-weight:600}
+.pm-hd .pd{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5}
+.pm-hd .px{margin-left:auto;font-size:18px;color:var(--muted);cursor:pointer;line-height:1;padding:2px 4px}
+.pm-hd .px:hover{color:var(--wx-text)}
+.pm-bd{flex:1;overflow-y:auto;padding:12px 18px 16px}
+.pm-tb{width:100%;border-collapse:collapse;font-size:11px}
+.pm-tb th{font-size:10px;color:var(--muted);font-weight:500;text-align:left;padding:5px 6px;border-bottom:1px solid var(--border);white-space:nowrap}
+.pm-tb td{padding:5px 6px;border-bottom:1px solid var(--border);vertical-align:middle}
+.pm-tb tr:last-child td{border-bottom:0}
+.pm-tb tr.pm-def{background:var(--blue-s)}
+.pm-tb tr.pm-def .pn{color:var(--wx-primary);font-weight:600}
+.pm-tb .pn{font-weight:600;white-space:nowrap}
+.pm-tb td.num{text-align:center}
+.pm-inp{width:62px;height:26px;text-align:center;border:1px solid var(--border);border-radius:6px;background:var(--input);color:var(--wx-text);font-size:11px;outline:none}
+.pm-inp:focus{border-color:var(--wx-primary)}
+.pm-inp:disabled{opacity:.45;cursor:not-allowed}
+.pm-sw{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);cursor:pointer;user-select:none}
+.pm-sw input{margin:0;cursor:pointer}
+.pm-sw.on{color:var(--wx-primary)}
+.pm-badge{font-size:9px;padding:1px 7px;border-radius:8px;font-weight:600}
+.pm-badge.d{color:var(--muted);background:var(--input);border:1px solid var(--border)}
+.pm-badge.c{color:var(--wx-primary);background:var(--blue-s);border:1px solid var(--wx-primary)}
+.pm-rst{font-size:10px;color:var(--wx-primary);cursor:pointer}
+.pm-rst.dis{color:var(--muted);cursor:default;opacity:.5}
+.pm-sub{font-size:12px;font-weight:600;margin:16px 0 7px;display:flex;align-items:center;gap:7px}
+.pm-sub::before{content:'';width:3px;height:12px;border-radius:2px;background:var(--wx-primary)}
+.pm-tip{font-size:10px;color:var(--muted);line-height:1.6;background:var(--panel2);border:1px dashed var(--border);border-radius:7px;padding:7px 9px;margin-top:8px}
+.pm-tip b{color:var(--wx-text2)}
+.pm-ft{padding:10px 18px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.pm-ft .sp{flex:1;font-size:10px;color:var(--muted)}
+.pm-btn{height:30px;padding:0 16px;border-radius:6px;font-size:12px;border:1px solid var(--border);background:var(--panel);color:var(--wx-text2)}
+.pm-btn:hover{border-color:var(--muted)}
+.pm-btn.pri{background:var(--wx-primary);color:#fff;border-color:var(--wx-primary)}
+.pm-cnt{display:inline-block;min-width:16px;padding:0 5px;border-radius:8px;background:var(--input);color:var(--muted);font-size:10px;margin-left:4px}
+/* ============ 客户标签 · 企微官版三大类（企业/系统/个人） ============ */
+.tq{position:relative;margin-bottom:10px}
+.tq input{width:100%;height:30px;border:1px solid var(--border);border-radius:7px;background:var(--input);padding:0 9px 0 28px;font-size:11px;color:var(--wx-text);outline:none}
+.tq input:focus{border-color:var(--wx-primary)}
+.tq svg{position:absolute;left:8px;top:7px;width:15px;height:15px;color:var(--muted)}
+.tcat{margin:12px 0 4px;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600}
+.tcat:first-of-type{margin-top:0}
+.tcat i{width:8px;height:8px;border-radius:2px;flex:none}
+.tcat .cn{font-size:9px;color:var(--muted);font-weight:400;margin-left:auto}
+.tgname{font-size:10px;color:var(--muted);margin:8px 0 5px}
+.tagmore{font-size:10px;color:var(--wx-primary);cursor:pointer;padding:2px 0}
+.tagfoot{position:sticky;bottom:-11px;margin:10px -13px -11px;padding:8px 13px;background:var(--panel);border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;z-index:2}
+.tagfoot .cnt{flex:1;font-size:11px;color:var(--muted)}
+.tagfoot .cnt b{color:var(--wx-primary)}
+.tbtn{height:28px;padding:0 16px;border-radius:6px;font-size:11px;border:1px solid var(--border);background:var(--panel);color:var(--wx-text2);flex:none}
+.tbtn:hover{border-color:var(--muted)}
+.tbtn.pri{background:var(--wx-primary);color:#fff;border-color:var(--wx-primary)}
+/* ============ 话术库 · 双列（左分类/右列表） ============ */
+.sc-wrap{display:flex;gap:9px}
+.sc-side{width:76px;flex:none;display:flex;flex-direction:column;gap:4px}
+.sc-ci{display:flex;justify-content:space-between;align-items:center;padding:7px 8px;border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer;border:1px solid transparent}
+.sc-ci:hover{background:var(--input)}
+.sc-ci.on{background:var(--blue-s);color:var(--wx-primary);font-weight:600}
+.sc-ci .n{font-size:9px;background:var(--input);border-radius:8px;min-width:15px;text-align:center;padding:0 4px;line-height:15px;font-weight:500}
+.sc-ci.on .n{background:var(--wx-primary);color:#fff}
+.sc-main{flex:1;min-width:0}
+/* ============ 群聊信息 · 对齐个微 PC 群聊界面 ============ */
+.anno{border:1px solid var(--border);border-radius:10px;background:var(--gold-s);padding:9px 11px}
+.anno .at{font-size:12px;font-weight:600;margin-bottom:3px;line-height:1.5}
+.anno .am{font-size:9px;color:var(--muted);margin-top:5px}
+.gset{display:flex;align-items:center;justify-content:space-between;padding:8px 2px;border-bottom:1px dashed var(--border);font-size:12px}
+.gset:last-child{border-bottom:0}
+.gset .gk{color:var(--wx-text2)}
+.sw{width:34px;height:19px;border-radius:10px;background:var(--border);position:relative;cursor:pointer;flex:none;transition:background .15s}
+.sw i{position:absolute;left:2px;top:2px;width:15px;height:15px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.sw.on{background:var(--green)}
+.sw.on i{left:17px}
+.gact{font-size:10px;color:var(--wx-primary);cursor:pointer}
+html,body{width:100%;height:100%;overflow:hidden}
+.hint{top:0;right:0;bottom:auto;left:0;height:24px;display:flex;align-items:center;justify-content:center;border-radius:0;padding:0 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wx-app{height:calc(100vh - 24px);margin-top:24px}</style>
+</head>
+<body data-page-node-id="Q7mMKDB1eimPEux8JIcpLz">
+<div class="hint" data-page-node-id="d6ebQEF9VC0tjJBc3wsWdm">原型演示 · 示例账号与会话 · 消息不发送至企微</div>
+<div class="wx-app" id="app" data-mode="light" data-layout="qywx" data-page-node-id="ykGVRbzlSP8KmSDZARsGY8">
+  <div class="icon-rail" data-page-node-id="dHCFjGRAespjHscST4e65d">
+    <div class="emp-entry" id="empEntry" title="切换企微账号" data-page-node-id="UmRov0VnTWQaTS6LClB4WC"><span id="empAv" data-page-node-id="l7vMToCVNBhnBRPED8KGwj">林</span><span class="ed on" id="empDot" data-page-node-id="5ffHIeNALWE9dVOMJK9B19"></span><span class="eb" id="empBdg" data-page-node-id="hqcZqO0p9Bn48wjdHLeY5V">12</span></div>
+    <div class="rri active" title="会话" data-page-node-id="TIksjp9aPHdB9TRqa0m8YH"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="ps0EHuUdIDEkmDgv6KqURA"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" data-page-node-id="kD4mosOWHsK44KDT2ekkh1"/></svg><span class="rb" data-page-node-id="U50p77qY8df2pmqRojCUVD">12</span></div>
+    <div class="rri" title="客户群" data-page-node-id="cCBT1pFf7iGc1EJRb0Euel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="4uFifSKuE1c9ePkxItEkBb"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" data-page-node-id="wD1shuUKS95uHTvzxnJGBq"/><circle cx="9" cy="7" r="4" data-page-node-id="M2Sav2LLKrDvGJoR2NdGQW"/><path d="M23 21v-2a4 4 0 0 0-3-3.87" data-page-node-id="HMaKBBF8a5Fc5Y9TrRzIJz"/><path d="M16 3.13a4 4 0 0 1 0 7.75" data-page-node-id="9aDpNU6AJhIZfyLJW2HwAz"/></svg></div>
+    <div class="rri-div" data-page-node-id="gJRGWQj1bltuqEgRSqGORI"></div>
+    <div class="rri" title="话术库" data-page-node-id="FTgGpm4U2U7LbBxGA8NDFj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="BQJTlkpv3T7lfg2Rk6wwIC"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" data-page-node-id="MTjZkV9qC65RmgPTx9KT7a"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" data-page-node-id="RGCsJNdSclZ3rsy2IUNBV3"/><line x1="8" y1="7" x2="16" y2="7" data-page-node-id="Weoym5fFIwctwfF480HSA3"/><line x1="8" y1="11" x2="14" y2="11" data-page-node-id="j3r0k0ciQYPwXIb8qW2clC"/></svg></div>
+    <div class="rri" title="客户标签" data-page-node-id="QR64URDPoxUjt8iqyhHe5K"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="hPwJ5BADBiYDbIxKHM6EhA"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" data-page-node-id="KtTxMxWSwVLEv8tPSgv4hv"/><line x1="7" y1="7" x2="7.01" y2="7" data-page-node-id="UvsIPqjZ28DWPSeGubTeJ0"/></svg></div>
+    <div class="rri" title="通讯录" data-page-node-id="O2ECkQLwXDg1rpEm3hUoWm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="ZPweka2ASjtSnUDr7PSGlI"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" data-page-node-id="VyB8jnKCnljDirJ28pEMpR"/><circle cx="9" cy="7" r="4" data-page-node-id="TQZvfqVC8IrCjDS9ZU7oIz"/><line x1="19" y1="8" x2="19" y2="14" data-page-node-id="EBNupFztYjwhmnmfiWdwCe"/><line x1="22" y1="11" x2="16" y2="11" data-page-node-id="j3P1oGCvwOoig3rOnPYoLf"/></svg></div>
+    <div class="rri" id="pmRail" title="参数管理 · 项目册判定口径"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+    <div class="rri theme" id="th" title="深色主题" data-page-node-id="1JHjuZtKZQKbG5m5rhD7xu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="u0W2AiqZkTohpqLLaVwNXF"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" data-page-node-id="7DSw4Uzltab1SONCYpBB8i"/></svg></div>
+  </div>
+  <div class="acc-pop" id="accPop" data-page-node-id="tCiUe9cQpfGg5J9e7lWQYO">
+    <div class="ap-head" data-page-node-id="apccAHh6hkulXzGeY84NGV"><div class="ap-title" data-page-node-id="wCMnAHoeLZ6S6rg09Knl4A"><span class="qw" data-page-node-id="QZoPcIhw7F8fNqDRxiS2Uf">企微</span>账号切换</div><input placeholder="搜索员工 / 企业主体..." data-page-node-id="kreBJbSNBtDIwTXF9DbPNb"></div>
+    <div class="ap-list" id="apList" data-page-node-id="RqvoVRmOpLrU94qanlqn4a"></div>
+    <div class="ap-status" id="apStatus" data-page-node-id="rsF77c73XH2lBTvJNtypFE"></div>
+  </div>
+  <div class="list-panel" data-page-node-id="P7hlw0GqcC5aLodwbdaBcB">
+    <div class="lp-search" data-page-node-id="rLMDTo03WFxez58u8q9kLB"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="DyK4nopl1lqi8p4hsg5WDU"><circle cx="11" cy="11" r="8" data-page-node-id="poiK11avEbLarFITxMxjmL"/><path d="m21 21-4.3-4.3" data-page-node-id="TF6cbcOkZzEcPJQDc3Sqzc"/></svg><input id="lw" placeholder="搜索客户 / 客户群" data-page-node-id="f0ajoTR1WC9abqJtYcQ1oe"><div class="lp-plus" id="lpPlus" title="添加" data-page-node-id="v2w3DNvy2YQ0tvRtGxdBVu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="J5O1dGzErTDcO0pIuSKOAJ"><circle cx="12" cy="12" r="10" data-page-node-id="PdTfoSmCGmEO5N7ccjXsXX"/><line x1="12" y1="8" x2="12" y2="16" data-page-node-id="nHp3tECuMDzxOljcfIacAc"/><line x1="8" y1="12" x2="16" y2="12" data-page-node-id="vVtRzr38JXavQiO7JfLJCh"/></svg></div>
+      <div class="lp-menu" id="lpMenu" data-page-node-id="L5CFBykEyyFNcxPG6VASra"><div data-lp="addcust" data-page-node-id="ei2QSLzpc7em8AWS6e46QM"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="PLCTasDwEyqu3CRhAdeeDj"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" data-page-node-id="ZM4wY4yrHDEPyBV7b43ACc"/><circle cx="9" cy="7" r="4" data-page-node-id="uRplEXXlLnchVu9uy4dGJl"/><line x1="19" y1="8" x2="19" y2="14" data-page-node-id="4GUeVmBrnjnfxrEZafGesS"/><line x1="22" y1="11" x2="16" y2="11" data-page-node-id="A10KCOkfy7kHzfS6bOJhn6"/></svg><span data-page-node-id="tFIP9XxLkAnJodOv7a5OfL">添加客户</span></div><div data-lp="group" data-page-node-id="oHJFImKXI2IEwuU0CvTF0C"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="H2lTqcpfATHETlIHmgTVWd"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" data-page-node-id="9BAdcWyFfCcK2zKTWPgr7a"/></svg><span data-page-node-id="HNjNiyRngmBl6sASxo95EO">发起客户群</span></div></div>
+    </div>
+    <div class="lp-filters" id="lpFilters" data-page-node-id="UIeTQ0u1rxf5uDh91W56eW"></div>
+    <div class="lp-items" id="convs" data-page-node-id="6Ter8C4hIDIs5EZB5HPaMv"></div>
+  </div>
+  <div class="vdiv" data-page-node-id="3mqYVj0ohyH9AYAeHLHFNy"></div>
+  <section class="content" data-page-node-id="ZMLkuZG8tjI0q6u5m4zWf4">
+    <div class="chead" data-page-node-id="mXe1orZ3rTJn3LqNNC3rM6"><span class="n" id="cName" data-page-node-id="6hr1FXGf19tJyCycEJpc7b"></span><span class="cstar" id="cStar" data-page-node-id="VWHj2TLPDNjkcu4gDMn1c7"></span><span class="csub" id="cSub" data-page-node-id="atHBbWN4PPBGHaNI4Df7Ki"></span><span class="sp" data-page-node-id="dm09E27xiNBVoCWFWSKpFR"></span>
+      <span class="gmw" id="gmW" data-page-node-id="DTjLb9HvvYT02Xo0EBclsP"><span class="gma" id="gmA" data-page-node-id="te4QsSUzfzbEmMUWEGkIlN"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px" data-page-node-id="yLtH9W7xuHBCSEMbHBlspr"><circle cx="12" cy="12" r="3" data-page-node-id="84iYDCCoEycmJL7IOqYrMa"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" data-page-node-id="g8Yv2yMmFtHMJAsIyvj6fm"/></svg> 群管理</span><div class="gmenu" id="gmMenu" data-page-node-id="F9IlLAvIldDzo7AfODSpI3"><div data-gm="invite" data-page-node-id="9mteaA0X1NzpgjmLg6mZrf">➕ 添加成员</div><div data-gm="kick" data-page-node-id="k6xH8rOleYEhxnpk0jh0nA">➖ 移除成员</div><div data-gm="notice" data-page-node-id="tkEuwxwqgtfnZxvFgS5czY">📢 发布群公告</div></div></span>
+      <span class="hbtn" id="histA" title="聊天记录" data-page-node-id="gEMnZ4EZFjwWH5YSRlB5EF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="Ysr0ogkr4ESsKLFaOxZNPv"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" data-page-node-id="luIfyDx8UFZM32ZimriZDC"/><line x1="8" y1="10" x2="8.01" y2="10" data-page-node-id="piH2pvLzECX8JvYXUip308"/><line x1="12" y1="10" x2="12.01" y2="10" data-page-node-id="oNZ7evgMr9YqYLcgWPWzOe"/><line x1="16" y1="10" x2="16.01" y2="10" data-page-node-id="ViXpBZkrt8aBCMMsWF09DG"/></svg></span>
+      <span class="hbtn" id="moreA" title="折叠/展开侧边栏" data-page-node-id="HdF0Y8LlscojcHC3Y6DFna"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none" data-page-node-id="cxXyZq8JSAce5I4MuTaCXS"><circle cx="5" cy="12" r="2" data-page-node-id="cD1LwiMRXsbl7Eqem0NpDX"/><circle cx="12" cy="12" r="2" data-page-node-id="sHE7BQnlbY2UNyovk2nAPZ"/><circle cx="19" cy="12" r="2" data-page-node-id="IcpWzuKltaAgWNv1fknRwu"/></svg></span>
+    </div>
+    <div class="chead-div" data-page-node-id="zCbahSr6RNVHX9UGdJ5LAC"></div>
+    <div class="msgs" id="msgs" data-page-node-id="ITMQO76HsKfAEI9zUIL91F"></div>
+    <div class="in-div" data-page-node-id="5Vcp6nlficWGMQk6r7Dzjt"></div>
+    <div class="in-area" data-page-node-id="KRLCCrCcklrAhgFEWXAvaJ">
+      <div class="toolbar" data-page-node-id="ph3LgyRw3RjnusKxxb61WV">
+        <span class="tb" title="表情" data-page-node-id="Lh0CZHsZBKglKKOkM5wxSP"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="CNsF7OJVOnTsZYbk9yHoj7"><circle cx="12" cy="12" r="10" data-page-node-id="pAvzJZspqueJ0E8pphg2Ra"/><path d="M8 14s1.5 2 4 2 4-2 4-2" data-page-node-id="cJllnxccYQ9XuhZOtxsaAd"/><line x1="9" y1="9" x2="9.01" y2="9" data-page-node-id="Q0Qbv3KmG7szjtNQ4D1lxv"/><line x1="15" y1="9" x2="15.01" y2="9" data-page-node-id="IxXwp0AAPVig2qxw7m2BX7"/></svg></span>
+        <span class="tb" id="tbScript" title="话术库" data-page-node-id="M7y4XcHqMJW8mwTBsfgEgL"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="1BjYA6xMsu4aua27Bq362P"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" data-page-node-id="W6KnhhtoMEeaLVRgIUKIDn"/></svg></span>
+        <span class="tb" title="素材/文件" data-page-node-id="w52nsdHd0CV6FhFCu8HijA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="ZgAyjxLQDRrl1UUjpXcZFU"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" data-page-node-id="FpOv6srqeT4q4ONFazANDu"/><line x1="2" y1="10" x2="22" y2="10" data-page-node-id="zC8y0JTpxAKav45yLnpQ7E"/></svg></span>
+        <span class="tb" title="截图（Ctrl+Shift+A）" data-page-node-id="5U4LtsaBBcY11fPmahIsld"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="d7NKluHgwWvc2yhiplkg1o"><circle cx="6" cy="6" r="3" data-page-node-id="M8NWSmNKxluiLRv0lOG8d6"/><circle cx="6" cy="18" r="3" data-page-node-id="S0SKkLOygPdhUHc5uZpoq1"/><line x1="20" y1="4" x2="8.12" y2="15.88" data-page-node-id="pgeGM61X3hfjrF4mMVeeTn"/><line x1="14.47" y1="14.48" x2="20" y2="20" data-page-node-id="xtQPqCUebXPG7kvpRp8QbE"/><line x1="8.12" y1="8.12" x2="12" y2="12" data-page-node-id="rp0oYBzmuqv3YGOMVocCSb"/></svg></span>
+        <span class="tb" title="客户名片" data-page-node-id="1g23o96xfLvUT7E0SKb5qU"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="GB1bKsebFcoowGQFNwEsPt"><rect x="2" y="4" width="20" height="16" rx="2" data-page-node-id="izqXaGhsZgWIpVulAhjdz8"/><circle cx="8" cy="10" r="2" data-page-node-id="qFxJtNHFCahavMBcrJt6Bh"/><path d="M14 9h5M14 13h5M5 16c.8-1.6 2-2.4 3-2.4s2.2.8 3 2.4" data-page-node-id="22FR9DqXi7oEWH4iGK8LLJ"/></svg></span>
+      </div>
+      <div class="tbox" data-page-node-id="KbfIWznXxByPpdqSXYnWc7"><textarea id="inp" placeholder="输入消息，Enter 发送，Shift+Enter 换行；可直接粘贴截图"></textarea></div>
+      <div class="sendrow" data-page-node-id="kHCzvbbcpxhBV0iZAZBY1W"><button class="sendbtn" id="sendB" data-page-node-id="a7PKqC5WcvM1bImATxACGx">发送</button></div>
+    </div>
+  </section>
+  <aside class="sb" data-page-node-id="NiecBYDMQmbhcEBAzEhx7R"><div class="sb-in" data-page-node-id="WAc0wQ6KFdqeEFxNGUd06S"><div class="arch" id="archEl" data-page-node-id="17ZKBEKSZACL6r1z3ZYWmR"></div><div class="sbtabs" id="sbtabs" data-page-node-id="VEsh8QBt3SuLjY8snoXApK"></div><div class="sbbody" id="sbbody" data-page-node-id="ygRgcBPtoVFdXV760joRbJ"></div></div></aside>
+  <!-- 参数管理 · 项目册断登/断充判定口径 -->
+  <div class="pm-mask" id="pmMask">
+    <div class="pm-panel">
+      <div class="pm-hd">
+        <div><div class="pt">参数管理 · 项目册判定口径</div>
+        <div class="pd">按项目配置「断登 / 深度断登 / 断充 / 深度断充」判定阈值（单位：小时）。未开启自定义的项目自动继承<b>全局默认</b>：断登 ≥ 24h、断充 ≥ 72h。</div></div>
+        <div class="px" id="pmX">✕</div>
+      </div>
+      <div class="pm-bd" id="pmBd"></div>
+      <div class="pm-ft">
+        <span class="sp" id="pmSp"></span>
+        <button class="pm-btn" id="pmReset">恢复全部默认</button>
+        <button class="pm-btn" id="pmCancel">取消</button>
+        <button class="pm-btn pri" id="pmSave">保存并生效</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toastEl" data-page-node-id="cRnUOZ4levUkHnupdbn2NS"></div>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+function toast(t,w){var e=$('toastEl');e.textContent=t;e.className='toast show'+(w?' warn':'');clearTimeout(e._t);e._t=setTimeout(function(){e.className='toast'},2200)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+/* 企微客户层级：中文星级（对齐 ChatList STAR_CN / STAR_COLORS） */
+var STARC={super_star:['超星','#f53f3f'],five_star:['五星','#ff7d00'],four_star:['四星','#165dff'],three_star:['三星','#00b42a'],two_star:['二星','#86909c'],one_star:['一星','#b0b3b8']};
+/* 企微员工账号（企业主体分组 · 实名 · 蓝色头像首色） */
+var ORG=[
+ {
+  "org": "聚玩网络科技",
+  "emps": [
+   {
+    "id": "e1",
+    "name": "林晓彤",
+    "title": "客户经理",
+    "c": "#3370FF",
+    "on": 1,
+    "bdg": 11
+   },
+   {
+    "id": "e2",
+    "name": "周慕云",
+    "title": "高级客户经理",
+    "c": "#FF9800",
+    "on": 1,
+    "bdg": 5
+   },
+   {
+    "id": "e3",
+    "name": "郑一鸣",
+    "title": "客户专员",
+    "c": "#00B42A",
+    "on": 0,
+    "bdg": 9
+   }
+  ]
+ },
+ {
+  "org": "地瓜互娱",
+  "emps": [
+   {
+    "id": "e4",
+    "name": "何书桓",
+    "title": "客户经理",
+    "c": "#4CAF50",
+    "on": 1,
+    "bdg": 9
+   },
+   {
+    "id": "e5",
+    "name": "苏若彤",
+    "title": "客服专员",
+    "c": "#E91E63",
+    "on": 1,
+    "bdg": 5
+   }
+  ]
+ },
+ {
+  "org": "鲜游互动",
+  "emps": [
+   {
+    "id": "e6",
+    "name": "陆知微",
+    "title": "高级客户经理",
+    "c": "#7B5FC0",
+    "on": 1,
+    "bdg": 13
+   },
+   {
+    "id": "e7",
+    "name": "江雪莹",
+    "title": "客户专员",
+    "c": "#F57C00",
+    "on": 1,
+    "bdg": 11
+   }
+  ]
+ },
+ {
+  "org": "幻影网络传媒",
+  "emps": [
+   {
+    "id": "e8",
+    "name": "顾南洲",
+    "title": "客户经理",
+    "c": "#1D9BF0",
+    "on": 1,
+    "bdg": 5
+   },
+   {
+    "id": "e9",
+    "name": "白露",
+    "title": "客户专员",
+    "c": "#E64340",
+    "on": 0,
+    "bdg": 5
+   }
+  ]
+ }
+];
+/* 客户会话（type=p 外部联系人 / g 客户群） */
+var CONVS=[
+ {
+  "id": "c1",
+  "emp": "e1",
+  "type": "p",
+  "star": "super_star",
+  "name": "示例联系人001",
+  "remark": "豪哥",
+  "av": "国",
+  "c": "#d88ba8",
+  "time": "15:53",
+  "bdg": 2,
+  "follow": false,
+  "corp": "个人客户",
+  "source": "官网注册",
+  "addWay": "扫码添加",
+  "added": "2026-04-18",
+  "nick": "巅峰丶豪哥",
+  "wxid": "示例联系人002",
+  "gender": "男",
+  "region": "广东 深圳",
+  "tags": [
+   [
+    "高净值",
+    "gold"
+   ],
+   [
+    "活跃",
+    "green"
+   ],
+   [
+    "充值意向",
+    "blue"
+   ]
+  ],
+  "crm": {
+   "proj": "传奇世界",
+   "game": "传奇世界·复古",
+   "acct": "U35599634",
+   "role": "RC21900299",
+   "lv": 90,
+   "recharge": "¥68,023",
+   "lastLogin": "今天 08:46",
+   "lastRech": "08-22 21:15",
+   "reg": "2026-04-14",
+   "plat": "24youxi"
+  },
+  "intent": {
+   "score": 92,
+   "level": "高意向",
+   "desc": "近 7 日 4 次主动咨询充值与合区活动，客单价高，处于「复购促成」阶段"
+  },
+  "words": [
+   {
+    "w": "合区",
+    "n": 18
+   },
+   {
+    "w": "排行榜",
+    "n": 15
+   },
+   {
+    "w": "充值",
+    "n": 12
+   },
+   {
+    "w": "装备",
+    "n": 9
+   },
+   {
+    "w": "活动",
+    "n": 8
+   },
+   {
+    "w": "礼包",
+    "n": 6
+   }
+  ],
+  "qc": {
+   "score": 92,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无敏感词、无夸大承诺"
+    ],
+    [
+     "话术",
+     "pass",
+     "破冰+利益点清晰，平均响应 40s"
+    ],
+    [
+     "风险",
+     "warn",
+     "客户提及「排行榜」情绪波动，建议电话安抚"
+    ],
+    [
+     "跟进",
+     "pass",
+     "24h 内 3 次有效触达"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "跟进",
+    "x": "电话跟进 15 分钟，客户关注合区排行榜，已安抚并同步规则",
+    "tm": "今天 16:20",
+    "by": "林晓彤"
+   },
+   {
+    "cf": "var(--gold)",
+    "tn": "打标",
+    "x": "打标「充值意向」",
+    "tm": "今天 15:40",
+    "by": "林晓彤"
+   },
+   {
+    "cf": "var(--purple)",
+    "tn": "素材",
+    "x": "发送《合区公告 & 战力重算说明》",
+    "tm": "今天 15:36",
+    "by": "林晓彤"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥17,005（累充 ¥68,023）",
+    "tm": "08-22 21:15",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「扫码添加」渠道添加",
+    "tm": "2026-04-18",
+    "by": "林晓彤"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "15:30",
+    "text": "合区之后排行榜怎么算？我这战力还保得住吗"
+   },
+   {
+    "f": "me",
+    "tm": "15:37",
+    "text": "豪哥放心，合区后按战力重新计算，您 90 级+神装优势还在前列～"
+   },
+   {
+    "f": "c",
+    "tm": "15:39",
+    "kind": "img"
+   },
+   {
+    "f": "me",
+    "tm": "15:43",
+    "text": "收到您的战力截图，稳居本服 Top3。这是合区公告，您先过目"
+   },
+   {
+    "f": "c",
+    "tm": "15:46",
+    "text": "那活动奖励能先看看吗？"
+   },
+   {
+    "f": "me",
+    "tm": "15:53",
+    "text": "本周累充满 3000 送橙色装备箱，您累充 ¥68,023 已达标最高档，我给您预留一份"
+   }
+  ]
+ },
+ {
+  "id": "c2",
+  "emp": "e1",
+  "type": "p",
+  "star": "five_star",
+  "name": "示例联系人003",
+  "remark": "鹏哥",
+  "av": "鹏",
+  "c": "#6f9fd8",
+  "time": "14:07",
+  "bdg": 5,
+  "follow": false,
+  "corp": "个人客户",
+  "source": "官网注册",
+  "addWay": "扫码添加",
+  "added": "2026-03-02",
+  "nick": "一刀999",
+  "wxid": "示例联系人004",
+  "gender": "男",
+  "region": "湖南 长沙",
+  "tags": [
+   [
+    "活跃",
+    "green"
+   ],
+   [
+    "充值意向",
+    "blue"
+   ]
+  ],
+  "crm": {
+   "proj": "传奇世界",
+   "game": "传奇世界·复古",
+   "acct": "U23792116",
+   "role": "RC51173537",
+   "lv": 79,
+   "recharge": "¥34,147",
+   "lastLogin": "今天 10:28",
+   "lastRech": "06-18",
+   "reg": "2026-02-25",
+   "plat": "guayou"
+  },
+  "intent": {
+   "score": 74,
+   "level": "中高意向",
+   "desc": "合区焦虑明显，需情绪安抚 + 补偿方案，处于「异议处理」阶段"
+  },
+  "words": [
+   {
+    "w": "合区",
+    "n": 20
+   },
+   {
+    "w": "战力",
+    "n": 16
+   },
+   {
+    "w": "排行",
+    "n": 11
+   },
+   {
+    "w": "补偿",
+    "n": 8
+   },
+   {
+    "w": "装备",
+    "n": 6
+   }
+  ],
+  "qc": {
+   "score": 80,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无夸大承诺"
+    ],
+    [
+     "话术",
+     "pass",
+     "共情到位，补偿口径准确"
+    ],
+    [
+     "风险",
+     "warn",
+     "客户情绪负面，存在退游风险，建议今日电话"
+    ],
+    [
+     "跟进",
+     "pass",
+     "已 2 次主动触达"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "跟进",
+    "x": "电话安抚合区焦虑，客户接受补偿方案",
+    "tm": "今天 14:10",
+    "by": "林晓彤"
+   },
+   {
+    "cf": "var(--gold)",
+    "tn": "素材",
+    "x": "发送《合区补偿说明》",
+    "tm": "今天 13:55",
+    "by": "林晓彤"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥8,536（累充 ¥34,147）",
+    "tm": "06-18",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「扫码添加」渠道添加",
+    "tm": "2026-03-02",
+    "by": "林晓彤"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "13:50",
+    "text": "合区之后我这号是不是要废了？对面战力太高"
+   },
+   {
+    "f": "me",
+    "tm": "13:52",
+    "text": "不会的鹏哥，合区按战力分档匹配，您 79 级在第一梯队"
+   },
+   {
+    "f": "c",
+    "tm": "13:58",
+    "text": "那我充的钱还有意义吗"
+   },
+   {
+    "f": "me",
+    "tm": "14:01",
+    "text": "战力全部保留，另外合区补偿给您补 2000 元宝，橙装不受影响"
+   },
+   {
+    "f": "c",
+    "tm": "14:07",
+    "text": "那行，我先观望两天看看排位"
+   }
+  ]
+ },
+ {
+  "id": "c3",
+  "emp": "e1",
+  "type": "p",
+  "star": "four_star",
+  "name": "示例联系人005",
+  "remark": "婷婷",
+  "av": "婷",
+  "c": "#e08a5a",
+  "time": "20:21",
+  "bdg": 0,
+  "follow": false,
+  "corp": "个人客户",
+  "source": "官网注册",
+  "addWay": "扫码添加",
+  "added": "2025-11-24",
+  "nick": "月下轻舞",
+  "wxid": "示例联系人006",
+  "gender": "女",
+  "region": "四川 成都",
+  "tags": [
+   [
+    "小额付费",
+    "gold"
+   ],
+   [
+    "活跃",
+    "green"
+   ]
+  ],
+  "crm": {
+   "proj": "传奇世界",
+   "game": "传奇世界·复古",
+   "acct": "U88089899",
+   "role": "RC54267344",
+   "lv": 71,
+   "recharge": "¥14,964",
+   "lastLogin": "今天 20:11",
+   "lastRech": "07-08",
+   "reg": "2025-11-21",
+   "plat": "24youxi"
+  },
+  "intent": {
+   "score": 65,
+   "level": "中意向",
+   "desc": "稳定小额付费，续费意愿明确，处于「例行维护」阶段"
+  },
+  "words": [
+   {
+    "w": "月卡",
+    "n": 12
+   },
+   {
+    "w": "福利",
+    "n": 9
+   },
+   {
+    "w": "签到",
+    "n": 7
+   },
+   {
+    "w": "活动",
+    "n": 6
+   },
+   {
+    "w": "礼包",
+    "n": 5
+   }
+  ],
+  "qc": {
+   "score": 86,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无违规"
+    ],
+    [
+     "话术",
+     "pass",
+     "响应及时，续费引导自然"
+    ],
+    [
+     "风险",
+     "pass",
+     "无"
+    ],
+    [
+     "跟进",
+     "pass",
+     "月度触达规律"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "跟进",
+    "x": "月卡到期提醒，客户同意续费半年",
+    "tm": "今天 20:12",
+    "by": "林晓彤"
+   },
+   {
+    "cf": "var(--gold)",
+    "tn": "充值",
+    "x": "充值 ¥328（半年卡）",
+    "tm": "今天 20:15",
+    "by": "林晓彤"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥3,741（累充 ¥14,964）",
+    "tm": "07-08",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「扫码添加」渠道添加",
+    "tm": "2025-11-24",
+    "by": "林晓彤"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "20:05",
+    "text": "月卡是不是到期了？今天没领到"
+   },
+   {
+    "f": "me",
+    "tm": "20:07",
+    "text": "婷婷的月卡昨天到期啦，续费可以领连续签到奖励，我给您发链接"
+   },
+   {
+    "f": "c",
+    "tm": "20:14",
+    "text": "续半年有没有优惠"
+   },
+   {
+    "f": "me",
+    "tm": "20:18",
+    "text": "半年卡 8 折，折下来每月省 12 元，还多送 6 张抽奖券"
+   },
+   {
+    "f": "c",
+    "tm": "20:21",
+    "text": "那行，续半年吧"
+   }
+  ]
+ },
+ {
+  "id": "c4",
+  "emp": "e1",
+  "type": "p",
+  "star": "three_star",
+  "name": "示例联系人007",
+  "remark": "小刘",
+  "av": "洋",
+  "c": "#7aa87a",
+  "time": "07/06",
+  "bdg": 1,
+  "follow": true,
+  "corp": "个人客户",
+  "source": "广告投放",
+  "addWay": "搜索添加",
+  "added": "2025-10-28",
+  "nick": "小小剑客",
+  "wxid": "示例联系人008",
+  "gender": "男",
+  "region": "湖北 武汉",
+  "tags": [
+   [
+    "沉睡",
+    "gray"
+   ],
+   [
+    "小额付费",
+    "gold"
+   ]
+  ],
+  "crm": {
+   "proj": "传奇世界",
+   "game": "传奇世界·复古",
+   "acct": "U19510611",
+   "role": "RC36345914",
+   "lv": 64,
+   "recharge": "¥3,729",
+   "lastLogin": "02-07 22:17",
+   "lastRech": "04-26",
+   "reg": "2025-10-23",
+   "plat": "guayou"
+  },
+  "intent": {
+   "score": 43,
+   "level": "待激活",
+   "desc": "连续 12 天未登录，会话沉睡，建议触发回流话术 + 回归礼包"
+  },
+  "words": [
+   {
+    "w": "没时间",
+    "n": 9
+   },
+   {
+    "w": "忙",
+    "n": 7
+   },
+   {
+    "w": "福利",
+    "n": 5
+   },
+   {
+    "w": "回归",
+    "n": 4
+   }
+  ],
+  "qc": {
+   "score": 74,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无违规"
+    ],
+    [
+     "话术",
+     "warn",
+     "近 3 次未回复客户消息，响应超时"
+    ],
+    [
+     "风险",
+     "pass",
+     "无流失投诉"
+    ],
+    [
+     "跟进",
+     "warn",
+     "超 7 天未主动跟进，建议今日触达"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "跟进",
+    "x": "微信问候，客户回复「最近忙」",
+    "tm": "昨天 22:10",
+    "by": "林晓彤"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥932（累充 ¥3,729）",
+    "tm": "04-26",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「搜索添加」渠道添加",
+    "tm": "2025-10-28",
+    "by": "林晓彤"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "21:40",
+    "text": "最近好忙，都没时间玩"
+   },
+   {
+    "f": "me",
+    "tm": "21:42",
+    "text": "小刘，最近开区福利多，回来看看说不定有惊喜～"
+   },
+   {
+    "f": "c",
+    "tm": "21:44",
+    "text": "有啥福利"
+   },
+   {
+    "f": "me",
+    "tm": "21:50",
+    "text": "回归玩家专享：7 天双倍经验 + 回归礼包（含橙装碎片×20），我帮您留了名额"
+   }
+  ]
+ },
+ {
+  "id": "c5",
+  "emp": "e2",
+  "type": "p",
+  "star": "five_star",
+  "name": "示例联系人009",
+  "remark": "王总",
+  "av": "振",
+  "c": "#b08bd8",
+  "time": "11:24",
+  "bdg": 3,
+  "follow": false,
+  "corp": "振宇科技",
+  "source": "老带新",
+  "addWay": "名片分享",
+  "added": "2026-03-23",
+  "nick": "一剑封喉",
+  "wxid": "示例联系人010",
+  "gender": "男",
+  "region": "江苏 南京",
+  "tags": [
+   [
+    "企业主",
+    "purple"
+   ],
+   [
+    "团队客户",
+    "blue"
+   ],
+   [
+    "高净值",
+    "gold"
+   ]
+  ],
+  "crm": {
+   "proj": "对决王城",
+   "game": "对决王城",
+   "acct": "U56789393",
+   "role": "RC23044448",
+   "lv": 78,
+   "recharge": "¥42,445",
+   "lastLogin": "今天 11:08",
+   "lastRech": "03-05",
+   "reg": "2026-03-19",
+   "plat": "24youxi"
+  },
+  "intent": {
+   "score": 77,
+   "level": "中高意向",
+   "desc": "团队入驻方案沟通中，决策周期 3-7 天，处于「方案沟通」阶段"
+  },
+  "words": [
+   {
+    "w": "新区",
+    "n": 14
+   },
+   {
+    "w": "团队",
+    "n": 11
+   },
+   {
+    "w": "入驻",
+    "n": 8
+   },
+   {
+    "w": "扶持",
+    "n": 7
+   },
+   {
+    "w": "活动",
+    "n": 5
+   }
+  ],
+  "qc": {
+   "score": 88,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无违规承诺，扶持额度在授权范围内"
+    ],
+    [
+     "话术",
+     "pass",
+     "方案讲解专业，利益点分层清晰"
+    ],
+    [
+     "风险",
+     "pass",
+     "无投诉风险"
+    ],
+    [
+     "跟进",
+     "warn",
+     "方案发出超 24h 未回，建议今日跟进"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "跟进",
+    "x": "沟通新区团队入驻方案，客户考虑中",
+    "tm": "今天 11:20",
+    "by": "周慕云"
+   },
+   {
+    "cf": "var(--gold)",
+    "tn": "素材",
+    "x": "发送《团队入驻扶持政策 V3》",
+    "tm": "昨天 16:05",
+    "by": "周慕云"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥10,611（累充 ¥42,445）",
+    "tm": "03-05",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「名片分享」渠道添加",
+    "tm": "2026-03-23",
+    "by": "周慕云"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "11:10",
+    "text": "你们新区什么时候开？我们公会想一起入驻"
+   },
+   {
+    "f": "me",
+    "tm": "11:13",
+    "text": "王总，新区本周六 10:00 开服，团队入驻我给您申请专属扶持名额"
+   },
+   {
+    "f": "c",
+    "tm": "11:16",
+    "text": "扶持力度怎么样？我们大概 30 号人"
+   },
+   {
+    "f": "me",
+    "tm": "11:22",
+    "text": "30 人团队可享首充翻倍 + 专属客服群 + 开服前 7 天战力护航，我把方案发您"
+   },
+   {
+    "f": "c",
+    "tm": "11:24",
+    "text": "行，那你把方案发我看看，合适我们就定这批"
+   }
+  ]
+ },
+ {
+  "id": "c6",
+  "emp": "e2",
+  "type": "p",
+  "star": "four_star",
+  "name": "示例联系人011",
+  "remark": "萱姐",
+  "av": "子",
+  "c": "#5b8fa8",
+  "time": "19:36",
+  "bdg": 0,
+  "follow": false,
+  "corp": "个人客户",
+  "source": "直播引流",
+  "addWay": "扫码添加",
+  "added": "2026-06-22",
+  "nick": "青衫故人",
+  "wxid": "示例联系人012",
+  "gender": "女",
+  "region": "上海 浦东",
+  "tags": [
+   [
+    "活跃",
+    "green"
+   ],
+   [
+    "新客",
+    "blue"
+   ]
+  ],
+  "crm": {
+   "proj": "对决王城",
+   "game": "对决王城",
+   "acct": "U97192676",
+   "role": "RC68601932",
+   "lv": 65,
+   "recharge": "¥9,699",
+   "lastLogin": "今天 19:32",
+   "lastRech": "08-08",
+   "reg": "2026-06-20",
+   "plat": "24youxi"
+  },
+  "intent": {
+   "score": 62,
+   "level": "中意向",
+   "desc": "活动参与意愿高，首充转化窗口期，处于「首充转化」阶段"
+  },
+  "words": [
+   {
+    "w": "活动",
+    "n": 14
+   },
+   {
+    "w": "礼包",
+    "n": 9
+   },
+   {
+    "w": "首充",
+    "n": 8
+   },
+   {
+    "w": "时间",
+    "n": 6
+   }
+  ],
+  "qc": {
+   "score": 90,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "活动口径与后台一致"
+    ],
+    [
+     "话术",
+     "pass",
+     "活动介绍清晰"
+    ],
+    [
+     "风险",
+     "pass",
+     "无"
+    ],
+    [
+     "跟进",
+     "pass",
+     "已发送活动素材"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "素材",
+    "x": "发送《本周活动一览表》",
+    "tm": "今天 19:32",
+    "by": "周慕云"
+   },
+   {
+    "cf": "var(--gold)",
+    "tn": "跟进",
+    "x": "客户咨询首充奖励，已解答",
+    "tm": "今天 19:30",
+    "by": "周慕云"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥2,424（累充 ¥9,699）",
+    "tm": "08-08",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「扫码添加」渠道添加",
+    "tm": "2026-06-22",
+    "by": "周慕云"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "19:25",
+    "text": "最近有什么活动吗？"
+   },
+   {
+    "f": "me",
+    "tm": "19:28",
+    "text": "青衫故人您好，本周有「累充送神装」和「签到翻倍」两个活动，这是详情图"
+   },
+   {
+    "f": "c",
+    "tm": "19:30",
+    "text": "首充有额外奖励吗"
+   },
+   {
+    "f": "me",
+    "tm": "19:33",
+    "text": "首充 6 元得神装 + 500 元宝，前 100 名加送坐骑，名额还剩 23 个"
+   },
+   {
+    "f": "c",
+    "tm": "19:36",
+    "text": "好，我冲一个"
+   }
+  ]
+ },
+ {
+  "id": "c7",
+  "emp": "e2",
+  "type": "p",
+  "star": "two_star",
+  "name": "示例联系人013",
+  "remark": "小罗",
+  "av": "嘉",
+  "c": "#c9873f",
+  "time": "07/17",
+  "bdg": 2,
+  "follow": true,
+  "corp": "个人客户",
+  "source": "广告投放",
+  "addWay": "搜索添加",
+  "added": "2025-11-12",
+  "nick": "荒野猎手",
+  "wxid": "示例联系人014",
+  "gender": "男",
+  "region": "河南 郑州",
+  "tags": [
+   [
+    "流失预警",
+    "red"
+   ],
+   [
+    "沉睡",
+    "gray"
+   ]
+  ],
+  "crm": {
+   "proj": "对决王城",
+   "game": "对决王城",
+   "acct": "U42798068",
+   "role": "RC37137371",
+   "lv": 43,
+   "recharge": "¥401",
+   "lastLogin": "04-12 21:42",
+   "lastRech": "03-29",
+   "reg": "2025-11-09",
+   "plat": "guayou"
+  },
+  "intent": {
+   "score": 28,
+   "level": "低意向",
+   "desc": "已表达退游意向，需紧急干预，处于「流失挽回」阶段"
+  },
+  "words": [
+   {
+    "w": "卸载",
+    "n": 8
+   },
+   {
+    "w": "没意思",
+    "n": 6
+   },
+   {
+    "w": "太氪",
+    "n": 5
+   },
+   {
+    "w": "退游",
+    "n": 4
+   }
+  ],
+  "qc": {
+   "score": 62,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无违规"
+    ],
+    [
+     "话术",
+     "warn",
+     "安抚话术偏弱，未给出明确补偿"
+    ],
+    [
+     "风险",
+     "warn",
+     "高风险流失，48h 内未转化则进入流失名单"
+    ],
+    [
+     "跟进",
+     "warn",
+     "连续 5 天未有效触达"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "打标",
+    "x": "打标「流失预警」，进入挽回 SOP",
+    "tm": "昨天 21:50",
+    "by": "周慕云"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥100（累充 ¥401）",
+    "tm": "03-29",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「搜索添加」渠道添加",
+    "tm": "2025-11-12",
+    "by": "周慕云"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "21:40",
+    "text": "这游戏太氪了，我准备卸了"
+   },
+   {
+    "f": "me",
+    "tm": "21:44",
+    "text": "小罗别急，您现在这战力打跨服完全够用，不充也能玩得舒服"
+   },
+   {
+    "f": "c",
+    "tm": "21:49",
+    "text": "打不过人家，全是氪金大佬"
+   },
+   {
+    "f": "me",
+    "tm": "21:53",
+    "text": "我给您申请个「平民成长包」，7 天战力追赶计划，先试试效果？"
+   }
+  ]
+ },
+ {
+  "id": "c8",
+  "emp": "e3",
+  "type": "p",
+  "star": "one_star",
+  "name": "示例联系人015",
+  "remark": "婉清",
+  "av": "婉",
+  "c": "#8a7fb8",
+  "time": "昨天",
+  "bdg": 4,
+  "follow": true,
+  "corp": "个人客户",
+  "source": "游戏内弹窗",
+  "addWay": "游戏内引流",
+  "added": "2026-09-07",
+  "nick": "秋水长天",
+  "wxid": "示例联系人016",
+  "gender": "女",
+  "region": "浙江 宁波",
+  "tags": [
+   [
+    "新客",
+    "blue"
+   ]
+  ],
+  "crm": {
+   "proj": "血饮天下",
+   "game": "血饮天下",
+   "acct": "U58142843",
+   "role": "RC50712952",
+   "lv": 22,
+   "recharge": "¥53",
+   "lastLogin": "今天 21:03",
+   "lastRech": "未充值",
+   "reg": "2026-09-04",
+   "plat": "guayou"
+  },
+  "intent": {
+   "score": 20,
+   "level": "待培育",
+   "desc": "新客未破冰，需完成首日引导，处于「新客培育」阶段"
+  },
+  "words": [
+   {
+    "w": "怎么玩",
+    "n": 7
+   },
+   {
+    "w": "新手",
+    "n": 5
+   },
+   {
+    "w": "礼包",
+    "n": 4
+   }
+  ],
+  "qc": {
+   "score": 68,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无违规"
+    ],
+    [
+     "话术",
+     "warn",
+     "仅 1 轮对话，未完成需求挖掘"
+    ],
+    [
+     "风险",
+     "pass",
+     "无"
+    ],
+    [
+     "跟进",
+     "warn",
+     "新客 24h 未二次触达"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "添加",
+    "x": "通过游戏内弹窗添加为新客",
+    "tm": "今天 21:02",
+    "by": "郑一鸣"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥13（累充 ¥53）",
+    "tm": "未充值",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「游戏内引流」渠道添加",
+    "tm": "2026-09-07",
+    "by": "郑一鸣"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "me",
+    "tm": "20:55",
+    "text": "秋水长天您好，我是郑一鸣，您的专属客户经理，游戏里遇到任何问题都可以找我～"
+   },
+   {
+    "f": "c",
+    "tm": "20:58",
+    "text": "嗯，刚下载，怎么玩"
+   },
+   {
+    "f": "me",
+    "tm": "21:01",
+    "text": "前期跟着主线走，30 级前别急着充钱，先领新手礼包，我发您兑换码"
+   }
+  ]
+ },
+ {
+  "id": "c9",
+  "emp": "e3",
+  "type": "p",
+  "star": "four_star",
+  "name": "示例联系人017",
+  "remark": "老邓",
+  "av": "超",
+  "c": "#4f9e86",
+  "time": "15:45",
+  "bdg": 0,
+  "follow": false,
+  "corp": "个人客户",
+  "source": "线下活动",
+  "addWay": "扫码添加",
+  "added": "2026-01-05",
+  "nick": "铁马冰河",
+  "wxid": "示例联系人018",
+  "gender": "男",
+  "region": "福建 厦门",
+  "tags": [
+   [
+    "活跃",
+    "green"
+   ],
+   [
+    "充值意向",
+    "blue"
+   ]
+  ],
+  "crm": {
+   "proj": "血饮天下",
+   "game": "血饮天下",
+   "acct": "U25944647",
+   "role": "RC36408759",
+   "lv": 72,
+   "recharge": "¥10,878",
+   "lastLogin": "今天 15:46",
+   "lastRech": "06-09",
+   "reg": "2026-01-04",
+   "plat": "24youxi"
+  },
+  "intent": {
+   "score": 57,
+   "level": "中意向",
+   "desc": "有账号交易与换新需求，存在私下交易风险，处于「需求引导」阶段"
+  },
+  "words": [
+   {
+    "w": "装备",
+    "n": 13
+   },
+   {
+    "w": "交易",
+    "n": 9
+   },
+   {
+    "w": "价格",
+    "n": 7
+   },
+   {
+    "w": "账号",
+    "n": 5
+   }
+  ],
+  "qc": {
+   "score": 72,
+   "items": [
+    [
+     "合规",
+     "warn",
+     "涉及账号私下交易引导，需规避平台违规风险"
+    ],
+    [
+     "话术",
+     "pass",
+     "报价专业"
+    ],
+    [
+     "风险",
+     "warn",
+     "私下交易违反平台规则，建议引导至官方交易行"
+    ],
+    [
+     "跟进",
+     "pass",
+     "已 2 次有效触达"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "跟进",
+    "x": "客户咨询橙装估价与买号预算，已给参考价",
+    "tm": "今天 15:44",
+    "by": "郑一鸣"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥2,719（累充 ¥10,878）",
+    "tm": "06-09",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「扫码添加」渠道添加",
+    "tm": "2026-01-05",
+    "by": "郑一鸣"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "15:30",
+    "text": "我这套橙装能卖多少？想换个号"
+   },
+   {
+    "f": "me",
+    "tm": "15:34",
+    "text": "老邓，交易行最近橙装均价 800-1200，您这套带极品词条可以挂 1500 左右"
+   },
+   {
+    "f": "c",
+    "tm": "15:39",
+    "text": "那买号的预算 3000 够吗"
+   },
+   {
+    "f": "me",
+    "tm": "15:45",
+    "text": "3000 能买到 75 级带神装的号，建议走官方交易行，安全不吃亏"
+   }
+  ]
+ },
+ {
+  "id": "c10",
+  "emp": "e3",
+  "type": "p",
+  "star": "four_star",
+  "name": "示例联系人019",
+  "remark": "少华",
+  "av": "少",
+  "c": "#c46b6b",
+  "time": "20:21",
+  "bdg": 0,
+  "follow": false,
+  "corp": "个人客户",
+  "source": "官网注册",
+  "addWay": "扫码添加",
+  "added": "2026-04-15",
+  "nick": "醉卧沙场",
+  "wxid": "示例联系人020",
+  "gender": "男",
+  "region": "山东 青岛",
+  "tags": [
+   [
+    "小额付费",
+    "gold"
+   ],
+   [
+    "活跃",
+    "green"
+   ]
+  ],
+  "crm": {
+   "proj": "血饮天下",
+   "game": "血饮天下",
+   "acct": "U57536623",
+   "role": "RC70491754",
+   "lv": 70,
+   "recharge": "¥10,875",
+   "lastLogin": "今天 20:17",
+   "lastRech": "01-05",
+   "reg": "2026-04-10",
+   "plat": "guayou"
+  },
+  "intent": {
+   "score": 58,
+   "level": "中意向",
+   "desc": "稳定小额付费，续费意愿明确，处于「例行维护」阶段"
+  },
+  "words": [
+   {
+    "w": "月卡",
+    "n": 12
+   },
+   {
+    "w": "福利",
+    "n": 9
+   },
+   {
+    "w": "签到",
+    "n": 7
+   },
+   {
+    "w": "活动",
+    "n": 6
+   },
+   {
+    "w": "礼包",
+    "n": 5
+   }
+  ],
+  "qc": {
+   "score": 86,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无违规"
+    ],
+    [
+     "话术",
+     "pass",
+     "响应及时，续费引导自然"
+    ],
+    [
+     "风险",
+     "pass",
+     "无"
+    ],
+    [
+     "跟进",
+     "pass",
+     "月度触达规律"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "跟进",
+    "x": "月卡到期提醒，客户同意续费半年",
+    "tm": "今天 20:12",
+    "by": "郑一鸣"
+   },
+   {
+    "cf": "var(--gold)",
+    "tn": "充值",
+    "x": "充值 ¥328（半年卡）",
+    "tm": "今天 20:15",
+    "by": "郑一鸣"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥2,718（累充 ¥10,875）",
+    "tm": "01-05",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「扫码添加」渠道添加",
+    "tm": "2026-04-15",
+    "by": "郑一鸣"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "20:05",
+    "text": "月卡是不是到期了？今天没领到"
+   },
+   {
+    "f": "me",
+    "tm": "20:09",
+    "text": "少华的月卡昨天到期啦，续费可以领连续签到奖励，我给您发链接"
+   },
+   {
+    "f": "c",
+    "tm": "20:11",
+    "text": "续半年有没有优惠"
+   },
+   {
+    "f": "me",
+    "tm": "20:15",
+    "text": "半年卡 8 折，折下来每月省 12 元，还多送 6 张抽奖券"
+   },
+   {
+    "f": "c",
+    "tm": "20:21",
+    "text": "那行，续半年吧"
+   }
+  ]
+ },
+ {
+  "id": "c11",
+  "emp": "e4",
+  "type": "p",
+  "star": "super_star",
+  "name": "示例联系人021",
+  "remark": "天哥",
+  "av": "天",
+  "c": "#6b8fc4",
+  "time": "15:55",
+  "bdg": 6,
+  "follow": false,
+  "corp": "天宇投资",
+  "source": "官网注册",
+  "addWay": "扫码添加",
+  "added": "2026-04-06",
+  "nick": "傲视群雄",
+  "wxid": "示例联系人022",
+  "gender": "男",
+  "region": "北京 朝阳",
+  "tags": [
+   [
+    "高净值",
+    "gold"
+   ],
+   [
+    "活跃",
+    "green"
+   ],
+   [
+    "充值意向",
+    "blue"
+   ]
+  ],
+  "crm": {
+   "proj": "格斗英雄",
+   "game": "格斗英雄·觉醒",
+   "acct": "U11430909",
+   "role": "RC80722621",
+   "lv": 89,
+   "recharge": "¥128,478",
+   "lastLogin": "今天 08:42",
+   "lastRech": "04-27 21:10",
+   "reg": "2026-04-05",
+   "plat": "24youxi"
+  },
+  "intent": {
+   "score": 89,
+   "level": "高意向",
+   "desc": "近 7 日 4 次主动咨询充值与合区活动，客单价高，处于「复购促成」阶段"
+  },
+  "words": [
+   {
+    "w": "合区",
+    "n": 18
+   },
+   {
+    "w": "排行榜",
+    "n": 15
+   },
+   {
+    "w": "充值",
+    "n": 12
+   },
+   {
+    "w": "装备",
+    "n": 9
+   },
+   {
+    "w": "活动",
+    "n": 8
+   },
+   {
+    "w": "礼包",
+    "n": 6
+   }
+  ],
+  "qc": {
+   "score": 92,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无敏感词、无夸大承诺"
+    ],
+    [
+     "话术",
+     "pass",
+     "破冰+利益点清晰，平均响应 40s"
+    ],
+    [
+     "风险",
+     "warn",
+     "客户提及「排行榜」情绪波动，建议电话安抚"
+    ],
+    [
+     "跟进",
+     "pass",
+     "24h 内 3 次有效触达"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "跟进",
+    "x": "电话跟进 15 分钟，客户关注合区排行榜，已安抚并同步规则",
+    "tm": "今天 16:20",
+    "by": "何书桓"
+   },
+   {
+    "cf": "var(--gold)",
+    "tn": "打标",
+    "x": "打标「充值意向」",
+    "tm": "今天 15:40",
+    "by": "何书桓"
+   },
+   {
+    "cf": "var(--purple)",
+    "tn": "素材",
+    "x": "发送《合区公告 & 战力重算说明》",
+    "tm": "今天 15:36",
+    "by": "何书桓"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥32,119（累充 ¥128,478）",
+    "tm": "04-27 21:10",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「扫码添加」渠道添加",
+    "tm": "2026-04-06",
+    "by": "何书桓"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "15:30",
+    "text": "合区之后排行榜怎么算？我这战力还保得住吗"
+   },
+   {
+    "f": "me",
+    "tm": "15:33",
+    "text": "天哥放心，合区后按战力重新计算，您 89 级+神装优势还在前列～"
+   },
+   {
+    "f": "c",
+    "tm": "15:40",
+    "kind": "img"
+   },
+   {
+    "f": "me",
+    "tm": "15:45",
+    "text": "收到您的战力截图，稳居本服 Top3。这是合区公告，您先过目"
+   },
+   {
+    "f": "c",
+    "tm": "15:50",
+    "text": "那活动奖励能先看看吗？"
+   },
+   {
+    "f": "me",
+    "tm": "15:55",
+    "text": "本周累充满 3000 送橙色装备箱，您累充 ¥128,478 已达标最高档，我给您预留一份"
+   }
+  ]
+ },
+ {
+  "id": "c12",
+  "emp": "e4",
+  "type": "p",
+  "star": "three_star",
+  "name": "示例联系人023",
+  "remark": "东子",
+  "av": "晓",
+  "c": "#d4544b",
+  "time": "18:30",
+  "bdg": 3,
+  "follow": true,
+  "corp": "个人客户",
+  "source": "广告投放",
+  "addWay": "搜索添加",
+  "added": "2026-02-15",
+  "nick": "烈焰焚天",
+  "wxid": "示例联系人024",
+  "gender": "男",
+  "region": "河北 石家庄",
+  "tags": [
+   [
+    "流失预警",
+    "red"
+   ],
+   [
+    "高净值",
+    "gold"
+   ]
+  ],
+  "crm": {
+   "proj": "格斗英雄",
+   "game": "格斗英雄·觉醒",
+   "acct": "U39707912",
+   "role": "RC68056240",
+   "lv": 69,
+   "recharge": "¥8,013",
+   "lastLogin": "今天 18:22",
+   "lastRech": "04-09",
+   "reg": "2026-02-10",
+   "plat": "guayou"
+  },
+  "intent": {
+   "score": 41,
+   "level": "高风险",
+   "desc": "充值未到账引发不满，需优先处理客诉，处于「客诉处理」阶段"
+  },
+  "words": [
+   {
+    "w": "没到账",
+    "n": 10
+   },
+   {
+    "w": "退款",
+    "n": 7
+   },
+   {
+    "w": "客服",
+    "n": 5
+   },
+   {
+    "w": "投诉",
+    "n": 4
+   }
+  ],
+  "qc": {
+   "score": 70,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无违规承诺"
+    ],
+    [
+     "话术",
+     "pass",
+     "先致歉再处理，节奏正确"
+    ],
+    [
+     "风险",
+     "warn",
+     "涉及资金客诉，超 2h 未闭环将升级投诉"
+    ],
+    [
+     "跟进",
+     "warn",
+     "客诉未闭环，需 30 分钟内确认到账"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "跟进",
+    "x": "充值 648 未到账，已提交人工补单",
+    "tm": "今天 18:24",
+    "by": "何书桓"
+   },
+   {
+    "cf": "var(--gold)",
+    "tn": "打标",
+    "x": "打标「流失预警」",
+    "tm": "今天 18:20",
+    "by": "何书桓"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥2,003（累充 ¥8,013）",
+    "tm": "04-09",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「搜索添加」渠道添加",
+    "tm": "2026-02-15",
+    "by": "何书桓"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "18:15",
+    "text": "我昨天充的 648 怎么还没到账？"
+   },
+   {
+    "f": "me",
+    "tm": "18:17",
+    "text": "东子抱歉，我马上帮您查单，订单号发我一下"
+   },
+   {
+    "f": "c",
+    "tm": "18:20",
+    "text": "订单号 202610992202，已经快 4 小时了"
+   },
+   {
+    "f": "me",
+    "tm": "18:24",
+    "text": "已定位到是渠道回调延迟，我走人工补单，30 分钟内到账，另外补您 100 元宝"
+   },
+   {
+    "f": "c",
+    "tm": "18:30",
+    "text": "行吧，别再出这种问题"
+   }
+  ]
+ },
+ {
+  "id": "c13",
+  "emp": "e4",
+  "type": "p",
+  "star": "four_star",
+  "name": "示例联系人025",
+  "remark": "静怡",
+  "av": "静",
+  "c": "#d88ba8",
+  "time": "19:38",
+  "bdg": 0,
+  "follow": false,
+  "corp": "个人客户",
+  "source": "直播引流",
+  "addWay": "扫码添加",
+  "added": "2026-04-14",
+  "nick": "素年锦时",
+  "wxid": "示例联系人026",
+  "gender": "女",
+  "region": "陕西 西安",
+  "tags": [
+   [
+    "活跃",
+    "green"
+   ],
+   [
+    "新客",
+    "blue"
+   ]
+  ],
+  "crm": {
+   "proj": "格斗英雄",
+   "game": "格斗英雄·觉醒",
+   "acct": "U88351006",
+   "role": "RC26518199",
+   "lv": 72,
+   "recharge": "¥8,244",
+   "lastLogin": "今天 19:38",
+   "lastRech": "02-07",
+   "reg": "2026-04-12",
+   "plat": "24youxi"
+  },
+  "intent": {
+   "score": 60,
+   "level": "中意向",
+   "desc": "活动参与意愿高，首充转化窗口期，处于「首充转化」阶段"
+  },
+  "words": [
+   {
+    "w": "活动",
+    "n": 14
+   },
+   {
+    "w": "礼包",
+    "n": 9
+   },
+   {
+    "w": "首充",
+    "n": 8
+   },
+   {
+    "w": "时间",
+    "n": 6
+   }
+  ],
+  "qc": {
+   "score": 90,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "活动口径与后台一致"
+    ],
+    [
+     "话术",
+     "pass",
+     "活动介绍清晰"
+    ],
+    [
+     "风险",
+     "pass",
+     "无"
+    ],
+    [
+     "跟进",
+     "pass",
+     "已发送活动素材"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "素材",
+    "x": "发送《本周活动一览表》",
+    "tm": "今天 19:32",
+    "by": "何书桓"
+   },
+   {
+    "cf": "var(--gold)",
+    "tn": "跟进",
+    "x": "客户咨询首充奖励，已解答",
+    "tm": "今天 19:30",
+    "by": "何书桓"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥2,061（累充 ¥8,244）",
+    "tm": "02-07",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「扫码添加」渠道添加",
+    "tm": "2026-04-14",
+    "by": "何书桓"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "19:25",
+    "text": "最近有什么活动吗？"
+   },
+   {
+    "f": "me",
+    "tm": "19:27",
+    "text": "素年锦时您好，本周有「累充送神装」和「签到翻倍」两个活动，这是详情图"
+   },
+   {
+    "f": "c",
+    "tm": "19:34",
+    "text": "首充有额外奖励吗"
+   },
+   {
+    "f": "me",
+    "tm": "19:36",
+    "text": "首充 6 元得神装 + 500 元宝，前 100 名加送坐骑，名额还剩 23 个"
+   },
+   {
+    "f": "c",
+    "tm": "19:38",
+    "text": "好，我冲一个"
+   }
+  ]
+ },
+ {
+  "id": "c14",
+  "emp": "e5",
+  "type": "p",
+  "star": "one_star",
+  "name": "示例联系人027",
+  "remark": "倩倩",
+  "av": "倩",
+  "c": "#6f9fd8",
+  "time": "昨天",
+  "bdg": 2,
+  "follow": true,
+  "corp": "个人客户",
+  "source": "游戏内弹窗",
+  "addWay": "游戏内引流",
+  "added": "2026-09-06",
+  "nick": "浅笑安然",
+  "wxid": "示例联系人028",
+  "gender": "女",
+  "region": "广东 广州",
+  "tags": [
+   [
+    "新客",
+    "blue"
+   ]
+  ],
+  "crm": {
+   "proj": "幻斗英雄",
+   "game": "幻斗英雄",
+   "acct": "U28539781",
+   "role": "RC32538347",
+   "lv": 29,
+   "recharge": "¥69",
+   "lastLogin": "今天 21:07",
+   "lastRech": "未充值",
+   "reg": "2026-09-05",
+   "plat": "guayou"
+  },
+  "intent": {
+   "score": 19,
+   "level": "待培育",
+   "desc": "新客未破冰，需完成首日引导，处于「新客培育」阶段"
+  },
+  "words": [
+   {
+    "w": "怎么玩",
+    "n": 7
+   },
+   {
+    "w": "新手",
+    "n": 5
+   },
+   {
+    "w": "礼包",
+    "n": 4
+   }
+  ],
+  "qc": {
+   "score": 68,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无违规"
+    ],
+    [
+     "话术",
+     "warn",
+     "仅 1 轮对话，未完成需求挖掘"
+    ],
+    [
+     "风险",
+     "pass",
+     "无"
+    ],
+    [
+     "跟进",
+     "warn",
+     "新客 24h 未二次触达"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "添加",
+    "x": "通过游戏内弹窗添加为新客",
+    "tm": "今天 21:02",
+    "by": "苏若彤"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥17（累充 ¥69）",
+    "tm": "未充值",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「游戏内引流」渠道添加",
+    "tm": "2026-09-06",
+    "by": "苏若彤"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "me",
+    "tm": "20:55",
+    "text": "浅笑安然您好，我是苏若彤，您的专属客户经理，游戏里遇到任何问题都可以找我～"
+   },
+   {
+    "f": "c",
+    "tm": "21:02",
+    "text": "嗯，刚下载，怎么玩"
+   },
+   {
+    "f": "me",
+    "tm": "21:05",
+    "text": "前期跟着主线走，30 级前别急着充钱，先领新手礼包，我发您兑换码"
+   }
+  ]
+ },
+ {
+  "id": "c15",
+  "emp": "e5",
+  "type": "p",
+  "star": "three_star",
+  "name": "示例联系人029",
+  "remark": "老何",
+  "av": "伟",
+  "c": "#e08a5a",
+  "time": "08/06",
+  "bdg": 0,
+  "follow": true,
+  "corp": "个人客户",
+  "source": "广告投放",
+  "addWay": "搜索添加",
+  "added": "2025-10-31",
+  "nick": "寒江孤影",
+  "wxid": "示例联系人030",
+  "gender": "男",
+  "region": "辽宁 沈阳",
+  "tags": [
+   [
+    "沉睡",
+    "gray"
+   ],
+   [
+    "小额付费",
+    "gold"
+   ]
+  ],
+  "crm": {
+   "proj": "幻斗英雄",
+   "game": "幻斗英雄",
+   "acct": "U12405865",
+   "role": "RC49093138",
+   "lv": 52,
+   "recharge": "¥1,965",
+   "lastLogin": "05-06 22:16",
+   "lastRech": "06-28",
+   "reg": "2025-10-26",
+   "plat": "24youxi"
+  },
+  "intent": {
+   "score": 41,
+   "level": "待激活",
+   "desc": "连续 12 天未登录，会话沉睡，建议触发回流话术 + 回归礼包"
+  },
+  "words": [
+   {
+    "w": "没时间",
+    "n": 9
+   },
+   {
+    "w": "忙",
+    "n": 7
+   },
+   {
+    "w": "福利",
+    "n": 5
+   },
+   {
+    "w": "回归",
+    "n": 4
+   }
+  ],
+  "qc": {
+   "score": 74,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无违规"
+    ],
+    [
+     "话术",
+     "warn",
+     "近 3 次未回复客户消息，响应超时"
+    ],
+    [
+     "风险",
+     "pass",
+     "无流失投诉"
+    ],
+    [
+     "跟进",
+     "warn",
+     "超 7 天未主动跟进，建议今日触达"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "跟进",
+    "x": "微信问候，客户回复「最近忙」",
+    "tm": "昨天 22:10",
+    "by": "苏若彤"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥491（累充 ¥1,965）",
+    "tm": "06-28",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「搜索添加」渠道添加",
+    "tm": "2025-10-31",
+    "by": "苏若彤"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "21:40",
+    "text": "最近好忙，都没时间玩"
+   },
+   {
+    "f": "me",
+    "tm": "21:46",
+    "text": "老何，最近开区福利多，回来看看说不定有惊喜～"
+   },
+   {
+    "f": "c",
+    "tm": "21:49",
+    "text": "有啥福利"
+   },
+   {
+    "f": "me",
+    "tm": "21:56",
+    "text": "回归玩家专享：7 天双倍经验 + 回归礼包（含橙装碎片×20），我帮您留了名额"
+   }
+  ]
+ },
+ {
+  "id": "c16",
+  "emp": "e5",
+  "type": "p",
+  "star": "four_star",
+  "name": "示例联系人031",
+  "remark": "雯丽",
+  "av": "雯",
+  "c": "#7aa87a",
+  "time": "20:23",
+  "bdg": 0,
+  "follow": false,
+  "corp": "个人客户",
+  "source": "官网注册",
+  "addWay": "扫码添加",
+  "added": "2026-04-03",
+  "nick": "紫电清霜",
+  "wxid": "示例联系人032",
+  "gender": "女",
+  "region": "江苏 苏州",
+  "tags": [
+   [
+    "小额付费",
+    "gold"
+   ],
+   [
+    "活跃",
+    "green"
+   ]
+  ],
+  "crm": {
+   "proj": "幻斗英雄",
+   "game": "幻斗英雄",
+   "acct": "U49091725",
+   "role": "RC13868935",
+   "lv": 71,
+   "recharge": "¥13,570",
+   "lastLogin": "今天 20:15",
+   "lastRech": "05-01",
+   "reg": "2026-04-02",
+   "plat": "guayou"
+  },
+  "intent": {
+   "score": 66,
+   "level": "中意向",
+   "desc": "稳定小额付费，续费意愿明确，处于「例行维护」阶段"
+  },
+  "words": [
+   {
+    "w": "月卡",
+    "n": 12
+   },
+   {
+    "w": "福利",
+    "n": 9
+   },
+   {
+    "w": "签到",
+    "n": 7
+   },
+   {
+    "w": "活动",
+    "n": 6
+   },
+   {
+    "w": "礼包",
+    "n": 5
+   }
+  ],
+  "qc": {
+   "score": 86,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无违规"
+    ],
+    [
+     "话术",
+     "pass",
+     "响应及时，续费引导自然"
+    ],
+    [
+     "风险",
+     "pass",
+     "无"
+    ],
+    [
+     "跟进",
+     "pass",
+     "月度触达规律"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "跟进",
+    "x": "月卡到期提醒，客户同意续费半年",
+    "tm": "今天 20:12",
+    "by": "苏若彤"
+   },
+   {
+    "cf": "var(--gold)",
+    "tn": "充值",
+    "x": "充值 ¥328（半年卡）",
+    "tm": "今天 20:15",
+    "by": "苏若彤"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥3,392（累充 ¥13,570）",
+    "tm": "05-01",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「扫码添加」渠道添加",
+    "tm": "2026-04-03",
+    "by": "苏若彤"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "20:05",
+    "text": "月卡是不是到期了？今天没领到"
+   },
+   {
+    "f": "me",
+    "tm": "20:12",
+    "text": "雯丽的月卡昨天到期啦，续费可以领连续签到奖励，我给您发链接"
+   },
+   {
+    "f": "c",
+    "tm": "20:16",
+    "text": "续半年有没有优惠"
+   },
+   {
+    "f": "me",
+    "tm": "20:20",
+    "text": "半年卡 8 折，折下来每月省 12 元，还多送 6 张抽奖券"
+   },
+   {
+    "f": "c",
+    "tm": "20:23",
+    "text": "那行，续半年吧"
+   }
+  ]
+ },
+ {
+  "id": "c17",
+  "emp": "e6",
+  "type": "p",
+  "star": "five_star",
+  "name": "示例联系人033",
+  "remark": "俊杰",
+  "av": "俊",
+  "c": "#b08bd8",
+  "time": "11:22",
+  "bdg": 4,
+  "follow": false,
+  "corp": "蜀汉互娱",
+  "source": "老带新",
+  "addWay": "名片分享",
+  "added": "2026-02-23",
+  "nick": "乱世枭雄",
+  "wxid": "示例联系人034",
+  "gender": "男",
+  "region": "四川 成都",
+  "tags": [
+   [
+    "企业主",
+    "purple"
+   ],
+   [
+    "团队客户",
+    "blue"
+   ],
+   [
+    "高净值",
+    "gold"
+   ]
+  ],
+  "crm": {
+   "proj": "噬龙天道",
+   "game": "噬龙天道",
+   "acct": "U18806530",
+   "role": "RC70325793",
+   "lv": 81,
+   "recharge": "¥20,243",
+   "lastLogin": "今天 11:07",
+   "lastRech": "08-08",
+   "reg": "2026-02-22",
+   "plat": "24youxi"
+  },
+  "intent": {
+   "score": 71,
+   "level": "中高意向",
+   "desc": "团队入驻方案沟通中，决策周期 3-7 天，处于「方案沟通」阶段"
+  },
+  "words": [
+   {
+    "w": "新区",
+    "n": 14
+   },
+   {
+    "w": "团队",
+    "n": 11
+   },
+   {
+    "w": "入驻",
+    "n": 8
+   },
+   {
+    "w": "扶持",
+    "n": 7
+   },
+   {
+    "w": "活动",
+    "n": 5
+   }
+  ],
+  "qc": {
+   "score": 88,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无违规承诺，扶持额度在授权范围内"
+    ],
+    [
+     "话术",
+     "pass",
+     "方案讲解专业，利益点分层清晰"
+    ],
+    [
+     "风险",
+     "pass",
+     "无投诉风险"
+    ],
+    [
+     "跟进",
+     "warn",
+     "方案发出超 24h 未回，建议今日跟进"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "跟进",
+    "x": "沟通新区团队入驻方案，客户考虑中",
+    "tm": "今天 11:20",
+    "by": "陆知微"
+   },
+   {
+    "cf": "var(--gold)",
+    "tn": "素材",
+    "x": "发送《团队入驻扶持政策 V3》",
+    "tm": "昨天 16:05",
+    "by": "陆知微"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥5,060（累充 ¥20,243）",
+    "tm": "08-08",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「名片分享」渠道添加",
+    "tm": "2026-02-23",
+    "by": "陆知微"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "11:10",
+    "text": "你们新区什么时候开？我们公会想一起入驻"
+   },
+   {
+    "f": "me",
+    "tm": "11:13",
+    "text": "俊杰，新区本周六 10:00 开服，团队入驻我给您申请专属扶持名额"
+   },
+   {
+    "f": "c",
+    "tm": "11:18",
+    "text": "扶持力度怎么样？我们大概 30 号人"
+   },
+   {
+    "f": "me",
+    "tm": "11:20",
+    "text": "30 人团队可享首充翻倍 + 专属客服群 + 开服前 7 天战力护航，我把方案发您"
+   },
+   {
+    "f": "c",
+    "tm": "11:22",
+    "text": "行，那你把方案发我看看，合适我们就定这批"
+   }
+  ]
+ },
+ {
+  "id": "c18",
+  "emp": "e6",
+  "type": "p",
+  "star": "five_star",
+  "name": "示例联系人035",
+  "remark": "秋霜",
+  "av": "秋",
+  "c": "#5b8fa8",
+  "time": "14:06",
+  "bdg": 0,
+  "follow": false,
+  "corp": "个人客户",
+  "source": "官网注册",
+  "addWay": "扫码添加",
+  "added": "2026-02-16",
+  "nick": "九天揽月",
+  "wxid": "示例联系人036",
+  "gender": "女",
+  "region": "湖北 武汉",
+  "tags": [
+   [
+    "活跃",
+    "green"
+   ],
+   [
+    "充值意向",
+    "blue"
+   ]
+  ],
+  "crm": {
+   "proj": "噬龙天道",
+   "game": "噬龙天道",
+   "acct": "U63922198",
+   "role": "RC82285690",
+   "lv": 84,
+   "recharge": "¥22,937",
+   "lastLogin": "今天 10:21",
+   "lastRech": "03-18",
+   "reg": "2026-02-13",
+   "plat": "guayou"
+  },
+  "intent": {
+   "score": 72,
+   "level": "中高意向",
+   "desc": "合区焦虑明显，需情绪安抚 + 补偿方案，处于「异议处理」阶段"
+  },
+  "words": [
+   {
+    "w": "合区",
+    "n": 20
+   },
+   {
+    "w": "战力",
+    "n": 16
+   },
+   {
+    "w": "排行",
+    "n": 11
+   },
+   {
+    "w": "补偿",
+    "n": 8
+   },
+   {
+    "w": "装备",
+    "n": 6
+   }
+  ],
+  "qc": {
+   "score": 80,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无夸大承诺"
+    ],
+    [
+     "话术",
+     "pass",
+     "共情到位，补偿口径准确"
+    ],
+    [
+     "风险",
+     "warn",
+     "客户情绪负面，存在退游风险，建议今日电话"
+    ],
+    [
+     "跟进",
+     "pass",
+     "已 2 次主动触达"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "跟进",
+    "x": "电话安抚合区焦虑，客户接受补偿方案",
+    "tm": "今天 14:10",
+    "by": "陆知微"
+   },
+   {
+    "cf": "var(--gold)",
+    "tn": "素材",
+    "x": "发送《合区补偿说明》",
+    "tm": "今天 13:55",
+    "by": "陆知微"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥5,734（累充 ¥22,937）",
+    "tm": "03-18",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「扫码添加」渠道添加",
+    "tm": "2026-02-16",
+    "by": "陆知微"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "13:50",
+    "text": "合区之后我这号是不是要废了？对面战力太高"
+   },
+   {
+    "f": "me",
+    "tm": "13:56",
+    "text": "不会的秋霜，合区按战力分档匹配，您 84 级在第一梯队"
+   },
+   {
+    "f": "c",
+    "tm": "14:01",
+    "text": "那我充的钱还有意义吗"
+   },
+   {
+    "f": "me",
+    "tm": "14:03",
+    "text": "战力全部保留，另外合区补偿给您补 2000 元宝，橙装不受影响"
+   },
+   {
+    "f": "c",
+    "tm": "14:06",
+    "text": "那行，我先观望两天看看排位"
+   }
+  ]
+ },
+ {
+  "id": "c19",
+  "emp": "e6",
+  "type": "p",
+  "star": "three_star",
+  "name": "示例联系人037",
+  "remark": "浩然",
+  "av": "浩",
+  "c": "#c9873f",
+  "time": "08/17",
+  "bdg": 1,
+  "follow": true,
+  "corp": "个人客户",
+  "source": "广告投放",
+  "addWay": "搜索添加",
+  "added": "2025-09-15",
+  "nick": "雷霆万钧",
+  "wxid": "示例联系人038",
+  "gender": "男",
+  "region": "安徽 合肥",
+  "tags": [
+   [
+    "沉睡",
+    "gray"
+   ],
+   [
+    "小额付费",
+    "gold"
+   ]
+  ],
+  "crm": {
+   "proj": "噬龙天道",
+   "game": "噬龙天道",
+   "acct": "U24368531",
+   "role": "RC83583997",
+   "lv": 56,
+   "recharge": "¥2,278",
+   "lastLogin": "02-03 22:13",
+   "lastRech": "05-22",
+   "reg": "2025-09-11",
+   "plat": "24youxi"
+  },
+  "intent": {
+   "score": 40,
+   "level": "待激活",
+   "desc": "连续 12 天未登录，会话沉睡，建议触发回流话术 + 回归礼包"
+  },
+  "words": [
+   {
+    "w": "没时间",
+    "n": 9
+   },
+   {
+    "w": "忙",
+    "n": 7
+   },
+   {
+    "w": "福利",
+    "n": 5
+   },
+   {
+    "w": "回归",
+    "n": 4
+   }
+  ],
+  "qc": {
+   "score": 74,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无违规"
+    ],
+    [
+     "话术",
+     "warn",
+     "近 3 次未回复客户消息，响应超时"
+    ],
+    [
+     "风险",
+     "pass",
+     "无流失投诉"
+    ],
+    [
+     "跟进",
+     "warn",
+     "超 7 天未主动跟进，建议今日触达"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "跟进",
+    "x": "微信问候，客户回复「最近忙」",
+    "tm": "昨天 22:10",
+    "by": "陆知微"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥569（累充 ¥2,278）",
+    "tm": "05-22",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「搜索添加」渠道添加",
+    "tm": "2025-09-15",
+    "by": "陆知微"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "21:40",
+    "text": "最近好忙，都没时间玩"
+   },
+   {
+    "f": "me",
+    "tm": "21:46",
+    "text": "浩然，最近开区福利多，回来看看说不定有惊喜～"
+   },
+   {
+    "f": "c",
+    "tm": "21:52",
+    "text": "有啥福利"
+   },
+   {
+    "f": "me",
+    "tm": "21:56",
+    "text": "回归玩家专享：7 天双倍经验 + 回归礼包（含橙装碎片×20），我帮您留了名额"
+   }
+  ]
+ },
+ {
+  "id": "c20",
+  "emp": "e7",
+  "type": "p",
+  "star": "four_star",
+  "name": "示例联系人039",
+  "remark": "强哥",
+  "av": "文",
+  "c": "#8a7fb8",
+  "time": "20:21",
+  "bdg": 0,
+  "follow": false,
+  "corp": "个人客户",
+  "source": "官网注册",
+  "addWay": "扫码添加",
+  "added": "2026-03-09",
+  "nick": "白马银枪",
+  "wxid": "示例联系人040",
+  "gender": "男",
+  "region": "广东 东莞",
+  "tags": [
+   [
+    "小额付费",
+    "gold"
+   ],
+   [
+    "活跃",
+    "green"
+   ]
+  ],
+  "crm": {
+   "proj": "万界无双",
+   "game": "万界无双",
+   "acct": "U90616587",
+   "role": "RC37885186",
+   "lv": 66,
+   "recharge": "¥7,140",
+   "lastLogin": "今天 20:19",
+   "lastRech": "06-01",
+   "reg": "2026-03-05",
+   "plat": "guayou"
+  },
+  "intent": {
+   "score": 64,
+   "level": "中意向",
+   "desc": "稳定小额付费，续费意愿明确，处于「例行维护」阶段"
+  },
+  "words": [
+   {
+    "w": "月卡",
+    "n": 12
+   },
+   {
+    "w": "福利",
+    "n": 9
+   },
+   {
+    "w": "签到",
+    "n": 7
+   },
+   {
+    "w": "活动",
+    "n": 6
+   },
+   {
+    "w": "礼包",
+    "n": 5
+   }
+  ],
+  "qc": {
+   "score": 86,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无违规"
+    ],
+    [
+     "话术",
+     "pass",
+     "响应及时，续费引导自然"
+    ],
+    [
+     "风险",
+     "pass",
+     "无"
+    ],
+    [
+     "跟进",
+     "pass",
+     "月度触达规律"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "跟进",
+    "x": "月卡到期提醒，客户同意续费半年",
+    "tm": "今天 20:12",
+    "by": "江雪莹"
+   },
+   {
+    "cf": "var(--gold)",
+    "tn": "充值",
+    "x": "充值 ¥328（半年卡）",
+    "tm": "今天 20:15",
+    "by": "江雪莹"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥1,785（累充 ¥7,140）",
+    "tm": "06-01",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「扫码添加」渠道添加",
+    "tm": "2026-03-09",
+    "by": "江雪莹"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "20:05",
+    "text": "月卡是不是到期了？今天没领到"
+   },
+   {
+    "f": "me",
+    "tm": "20:09",
+    "text": "强哥的月卡昨天到期啦，续费可以领连续签到奖励，我给您发链接"
+   },
+   {
+    "f": "c",
+    "tm": "20:12",
+    "text": "续半年有没有优惠"
+   },
+   {
+    "f": "me",
+    "tm": "20:18",
+    "text": "半年卡 8 折，折下来每月省 12 元，还多送 6 张抽奖券"
+   },
+   {
+    "f": "c",
+    "tm": "20:21",
+    "text": "那行，续半年吧"
+   }
+  ]
+ },
+ {
+  "id": "c21",
+  "emp": "e7",
+  "type": "p",
+  "star": "one_star",
+  "name": "示例联系人041",
+  "remark": "婷婷",
+  "av": "婷",
+  "c": "#4f9e86",
+  "time": "昨天",
+  "bdg": 3,
+  "follow": true,
+  "corp": "个人客户",
+  "source": "游戏内弹窗",
+  "addWay": "游戏内引流",
+  "added": "2026-09-04",
+  "nick": "南风知我意",
+  "wxid": "示例联系人042",
+  "gender": "女",
+  "region": "云南 昆明",
+  "tags": [
+   [
+    "新客",
+    "blue"
+   ]
+  ],
+  "crm": {
+   "proj": "万界无双",
+   "game": "万界无双",
+   "acct": "U61770027",
+   "role": "RC10234484",
+   "lv": 23,
+   "recharge": "¥45",
+   "lastLogin": "今天 21:03",
+   "lastRech": "未充值",
+   "reg": "2026-09-03",
+   "plat": "24youxi"
+  },
+  "intent": {
+   "score": 25,
+   "level": "待培育",
+   "desc": "新客未破冰，需完成首日引导，处于「新客培育」阶段"
+  },
+  "words": [
+   {
+    "w": "怎么玩",
+    "n": 7
+   },
+   {
+    "w": "新手",
+    "n": 5
+   },
+   {
+    "w": "礼包",
+    "n": 4
+   }
+  ],
+  "qc": {
+   "score": 68,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无违规"
+    ],
+    [
+     "话术",
+     "warn",
+     "仅 1 轮对话，未完成需求挖掘"
+    ],
+    [
+     "风险",
+     "pass",
+     "无"
+    ],
+    [
+     "跟进",
+     "warn",
+     "新客 24h 未二次触达"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "添加",
+    "x": "通过游戏内弹窗添加为新客",
+    "tm": "今天 21:02",
+    "by": "江雪莹"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥11（累充 ¥45）",
+    "tm": "未充值",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「游戏内引流」渠道添加",
+    "tm": "2026-09-04",
+    "by": "江雪莹"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "me",
+    "tm": "20:55",
+    "text": "南风知我意您好，我是江雪莹，您的专属客户经理，游戏里遇到任何问题都可以找我～"
+   },
+   {
+    "f": "c",
+    "tm": "21:02",
+    "text": "嗯，刚下载，怎么玩"
+   },
+   {
+    "f": "me",
+    "tm": "21:05",
+    "text": "前期跟着主线走，30 级前别急着充钱，先领新手礼包，我发您兑换码"
+   }
+  ]
+ },
+ {
+  "id": "c22",
+  "emp": "e7",
+  "type": "p",
+  "star": "two_star",
+  "name": "示例联系人043",
+  "remark": "老蔡",
+  "av": "志",
+  "c": "#c46b6b",
+  "time": "06/03",
+  "bdg": 0,
+  "follow": true,
+  "corp": "个人客户",
+  "source": "广告投放",
+  "addWay": "搜索添加",
+  "added": "2025-11-18",
+  "nick": "云中君",
+  "wxid": "示例联系人044",
+  "gender": "男",
+  "region": "江西 南昌",
+  "tags": [
+   [
+    "流失预警",
+    "red"
+   ],
+   [
+    "沉睡",
+    "gray"
+   ]
+  ],
+  "crm": {
+   "proj": "万界无双",
+   "game": "万界无双",
+   "acct": "U29199305",
+   "role": "RC50669889",
+   "lv": 53,
+   "recharge": "¥381",
+   "lastLogin": "02-11 21:41",
+   "lastRech": "05-23",
+   "reg": "2025-11-13",
+   "plat": "guayou"
+  },
+  "intent": {
+   "score": 25,
+   "level": "低意向",
+   "desc": "已表达退游意向，需紧急干预，处于「流失挽回」阶段"
+  },
+  "words": [
+   {
+    "w": "卸载",
+    "n": 8
+   },
+   {
+    "w": "没意思",
+    "n": 6
+   },
+   {
+    "w": "太氪",
+    "n": 5
+   },
+   {
+    "w": "退游",
+    "n": 4
+   }
+  ],
+  "qc": {
+   "score": 62,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无违规"
+    ],
+    [
+     "话术",
+     "warn",
+     "安抚话术偏弱，未给出明确补偿"
+    ],
+    [
+     "风险",
+     "warn",
+     "高风险流失，48h 内未转化则进入流失名单"
+    ],
+    [
+     "跟进",
+     "warn",
+     "连续 5 天未有效触达"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "打标",
+    "x": "打标「流失预警」，进入挽回 SOP",
+    "tm": "昨天 21:50",
+    "by": "江雪莹"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥95（累充 ¥381）",
+    "tm": "05-23",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「搜索添加」渠道添加",
+    "tm": "2025-11-18",
+    "by": "江雪莹"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "21:40",
+    "text": "这游戏太氪了，我准备卸了"
+   },
+   {
+    "f": "me",
+    "tm": "21:46",
+    "text": "老蔡别急，您现在这战力打跨服完全够用，不充也能玩得舒服"
+   },
+   {
+    "f": "c",
+    "tm": "21:50",
+    "text": "打不过人家，全是氪金大佬"
+   },
+   {
+    "f": "me",
+    "tm": "21:52",
+    "text": "我给您申请个「平民成长包」，7 天战力追赶计划，先试试效果？"
+   }
+  ]
+ },
+ {
+  "id": "c23",
+  "emp": "e8",
+  "type": "p",
+  "star": "super_star",
+  "name": "示例联系人045",
+  "remark": "磊哥",
+  "av": "磊",
+  "c": "#6b8fc4",
+  "time": "15:58",
+  "bdg": 5,
+  "follow": false,
+  "corp": "恒盛网络",
+  "source": "官网注册",
+  "addWay": "扫码添加",
+  "added": "2026-03-29",
+  "nick": "战神归来",
+  "wxid": "示例联系人046",
+  "gender": "男",
+  "region": "浙江 杭州",
+  "tags": [
+   [
+    "高净值",
+    "gold"
+   ],
+   [
+    "活跃",
+    "green"
+   ],
+   [
+    "充值意向",
+    "blue"
+   ]
+  ],
+  "crm": {
+   "proj": "烈火封神",
+   "game": "烈火封神",
+   "acct": "U74909726",
+   "role": "RC94260804",
+   "lv": 85,
+   "recharge": "¥83,510",
+   "lastLogin": "今天 08:47",
+   "lastRech": "05-17 21:11",
+   "reg": "2026-03-28",
+   "plat": "24youxi"
+  },
+  "intent": {
+   "score": 85,
+   "level": "高意向",
+   "desc": "近 7 日 4 次主动咨询充值与合区活动，客单价高，处于「复购促成」阶段"
+  },
+  "words": [
+   {
+    "w": "合区",
+    "n": 18
+   },
+   {
+    "w": "排行榜",
+    "n": 15
+   },
+   {
+    "w": "充值",
+    "n": 12
+   },
+   {
+    "w": "装备",
+    "n": 9
+   },
+   {
+    "w": "活动",
+    "n": 8
+   },
+   {
+    "w": "礼包",
+    "n": 6
+   }
+  ],
+  "qc": {
+   "score": 92,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无敏感词、无夸大承诺"
+    ],
+    [
+     "话术",
+     "pass",
+     "破冰+利益点清晰，平均响应 40s"
+    ],
+    [
+     "风险",
+     "warn",
+     "客户提及「排行榜」情绪波动，建议电话安抚"
+    ],
+    [
+     "跟进",
+     "pass",
+     "24h 内 3 次有效触达"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "跟进",
+    "x": "电话跟进 15 分钟，客户关注合区排行榜，已安抚并同步规则",
+    "tm": "今天 16:20",
+    "by": "顾南洲"
+   },
+   {
+    "cf": "var(--gold)",
+    "tn": "打标",
+    "x": "打标「充值意向」",
+    "tm": "今天 15:40",
+    "by": "顾南洲"
+   },
+   {
+    "cf": "var(--purple)",
+    "tn": "素材",
+    "x": "发送《合区公告 & 战力重算说明》",
+    "tm": "今天 15:36",
+    "by": "顾南洲"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥20,877（累充 ¥83,510）",
+    "tm": "05-17 21:11",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「扫码添加」渠道添加",
+    "tm": "2026-03-29",
+    "by": "顾南洲"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "15:30",
+    "text": "合区之后排行榜怎么算？我这战力还保得住吗"
+   },
+   {
+    "f": "me",
+    "tm": "15:37",
+    "text": "磊哥放心，合区后按战力重新计算，您 85 级+神装优势还在前列～"
+   },
+   {
+    "f": "c",
+    "tm": "15:44",
+    "kind": "img"
+   },
+   {
+    "f": "me",
+    "tm": "15:48",
+    "text": "收到您的战力截图，稳居本服 Top3。这是合区公告，您先过目"
+   },
+   {
+    "f": "c",
+    "tm": "15:55",
+    "text": "那活动奖励能先看看吗？"
+   },
+   {
+    "f": "me",
+    "tm": "15:58",
+    "text": "本周累充满 3000 送橙色装备箱，您累充 ¥83,510 已达标最高档，我给您预留一份"
+   }
+  ]
+ },
+ {
+  "id": "c24",
+  "emp": "e8",
+  "type": "p",
+  "star": "four_star",
+  "name": "示例联系人047",
+  "remark": "小苏",
+  "av": "晓",
+  "c": "#d4544b",
+  "time": "19:39",
+  "bdg": 0,
+  "follow": false,
+  "corp": "个人客户",
+  "source": "直播引流",
+  "addWay": "扫码添加",
+  "added": "2026-06-10",
+  "nick": "逍遥子",
+  "wxid": "示例联系人048",
+  "gender": "男",
+  "region": "湖南 长沙",
+  "tags": [
+   [
+    "活跃",
+    "green"
+   ],
+   [
+    "新客",
+    "blue"
+   ]
+  ],
+  "crm": {
+   "proj": "烈火封神",
+   "game": "烈火封神",
+   "acct": "U32586204",
+   "role": "RC63900579",
+   "lv": 66,
+   "recharge": "¥10,316",
+   "lastLogin": "今天 19:36",
+   "lastRech": "03-02",
+   "reg": "2026-06-08",
+   "plat": "guayou"
+  },
+  "intent": {
+   "score": 62,
+   "level": "中意向",
+   "desc": "活动参与意愿高，首充转化窗口期，处于「首充转化」阶段"
+  },
+  "words": [
+   {
+    "w": "活动",
+    "n": 14
+   },
+   {
+    "w": "礼包",
+    "n": 9
+   },
+   {
+    "w": "首充",
+    "n": 8
+   },
+   {
+    "w": "时间",
+    "n": 6
+   }
+  ],
+  "qc": {
+   "score": 90,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "活动口径与后台一致"
+    ],
+    [
+     "话术",
+     "pass",
+     "活动介绍清晰"
+    ],
+    [
+     "风险",
+     "pass",
+     "无"
+    ],
+    [
+     "跟进",
+     "pass",
+     "已发送活动素材"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "素材",
+    "x": "发送《本周活动一览表》",
+    "tm": "今天 19:32",
+    "by": "顾南洲"
+   },
+   {
+    "cf": "var(--gold)",
+    "tn": "跟进",
+    "x": "客户咨询首充奖励，已解答",
+    "tm": "今天 19:30",
+    "by": "顾南洲"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥2,579（累充 ¥10,316）",
+    "tm": "03-02",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「扫码添加」渠道添加",
+    "tm": "2026-06-10",
+    "by": "顾南洲"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "19:25",
+    "text": "最近有什么活动吗？"
+   },
+   {
+    "f": "me",
+    "tm": "19:27",
+    "text": "逍遥子您好，本周有「累充送神装」和「签到翻倍」两个活动，这是详情图"
+   },
+   {
+    "f": "c",
+    "tm": "19:34",
+    "text": "首充有额外奖励吗"
+   },
+   {
+    "f": "me",
+    "tm": "19:37",
+    "text": "首充 6 元得神装 + 500 元宝，前 100 名加送坐骑，名额还剩 23 个"
+   },
+   {
+    "f": "c",
+    "tm": "19:39",
+    "text": "好，我冲一个"
+   }
+  ]
+ },
+ {
+  "id": "c25",
+  "emp": "e8",
+  "type": "p",
+  "star": "four_star",
+  "name": "示例联系人049",
+  "remark": "老余",
+  "av": "思",
+  "c": "#d88ba8",
+  "time": "15:44",
+  "bdg": 0,
+  "follow": false,
+  "corp": "个人客户",
+  "source": "线下活动",
+  "addWay": "扫码添加",
+  "added": "2026-04-11",
+  "nick": "墨染青衣",
+  "wxid": "示例联系人050",
+  "gender": "男",
+  "region": "江苏 无锡",
+  "tags": [
+   [
+    "活跃",
+    "green"
+   ],
+   [
+    "充值意向",
+    "blue"
+   ]
+  ],
+  "crm": {
+   "proj": "烈火封神",
+   "game": "烈火封神",
+   "acct": "U70056811",
+   "role": "RC37162605",
+   "lv": 71,
+   "recharge": "¥17,097",
+   "lastLogin": "今天 15:41",
+   "lastRech": "04-07",
+   "reg": "2026-04-06",
+   "plat": "24youxi"
+  },
+  "intent": {
+   "score": 55,
+   "level": "中意向",
+   "desc": "有账号交易与换新需求，存在私下交易风险，处于「需求引导」阶段"
+  },
+  "words": [
+   {
+    "w": "装备",
+    "n": 13
+   },
+   {
+    "w": "交易",
+    "n": 9
+   },
+   {
+    "w": "价格",
+    "n": 7
+   },
+   {
+    "w": "账号",
+    "n": 5
+   }
+  ],
+  "qc": {
+   "score": 72,
+   "items": [
+    [
+     "合规",
+     "warn",
+     "涉及账号私下交易引导，需规避平台违规风险"
+    ],
+    [
+     "话术",
+     "pass",
+     "报价专业"
+    ],
+    [
+     "风险",
+     "warn",
+     "私下交易违反平台规则，建议引导至官方交易行"
+    ],
+    [
+     "跟进",
+     "pass",
+     "已 2 次有效触达"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "跟进",
+    "x": "客户咨询橙装估价与买号预算，已给参考价",
+    "tm": "今天 15:44",
+    "by": "顾南洲"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥4,274（累充 ¥17,097）",
+    "tm": "04-07",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「扫码添加」渠道添加",
+    "tm": "2026-04-11",
+    "by": "顾南洲"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "15:30",
+    "text": "我这套橙装能卖多少？想换个号"
+   },
+   {
+    "f": "me",
+    "tm": "15:36",
+    "text": "老余，交易行最近橙装均价 800-1200，您这套带极品词条可以挂 1500 左右"
+   },
+   {
+    "f": "c",
+    "tm": "15:41",
+    "text": "那买号的预算 3000 够吗"
+   },
+   {
+    "f": "me",
+    "tm": "15:44",
+    "text": "3000 能买到 75 级带神装的号，建议走官方交易行，安全不吃亏"
+   }
+  ]
+ },
+ {
+  "id": "c26",
+  "emp": "e9",
+  "type": "p",
+  "star": "one_star",
+  "name": "示例联系人051",
+  "remark": "老宋",
+  "av": "建",
+  "c": "#6f9fd8",
+  "time": "昨天",
+  "bdg": 2,
+  "follow": true,
+  "corp": "个人客户",
+  "source": "游戏内弹窗",
+  "addWay": "游戏内引流",
+  "added": "2026-09-06",
+  "nick": "风清扬",
+  "wxid": "示例联系人052",
+  "gender": "男",
+  "region": "山西 太原",
+  "tags": [
+   [
+    "新客",
+    "blue"
+   ]
+  ],
+  "crm": {
+   "proj": "传奇世界",
+   "game": "传奇世界·复古",
+   "acct": "U29232491",
+   "role": "RC23392668",
+   "lv": 22,
+   "recharge": "¥90",
+   "lastLogin": "今天 21:04",
+   "lastRech": "未充值",
+   "reg": "2026-09-02",
+   "plat": "guayou"
+  },
+  "intent": {
+   "score": 20,
+   "level": "待培育",
+   "desc": "新客未破冰，需完成首日引导，处于「新客培育」阶段"
+  },
+  "words": [
+   {
+    "w": "怎么玩",
+    "n": 7
+   },
+   {
+    "w": "新手",
+    "n": 5
+   },
+   {
+    "w": "礼包",
+    "n": 4
+   }
+  ],
+  "qc": {
+   "score": 68,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无违规"
+    ],
+    [
+     "话术",
+     "warn",
+     "仅 1 轮对话，未完成需求挖掘"
+    ],
+    [
+     "风险",
+     "pass",
+     "无"
+    ],
+    [
+     "跟进",
+     "warn",
+     "新客 24h 未二次触达"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "添加",
+    "x": "通过游戏内弹窗添加为新客",
+    "tm": "今天 21:02",
+    "by": "白露"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥22（累充 ¥90）",
+    "tm": "未充值",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「游戏内引流」渠道添加",
+    "tm": "2026-09-06",
+    "by": "白露"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "me",
+    "tm": "20:55",
+    "text": "风清扬您好，我是白露，您的专属客户经理，游戏里遇到任何问题都可以找我～"
+   },
+   {
+    "f": "c",
+    "tm": "20:58",
+    "text": "嗯，刚下载，怎么玩"
+   },
+   {
+    "f": "me",
+    "tm": "21:01",
+    "text": "前期跟着主线走，30 级前别急着充钱，先领新手礼包，我发您兑换码"
+   }
+  ]
+ },
+ {
+  "id": "c27",
+  "emp": "e9",
+  "type": "p",
+  "star": "four_star",
+  "name": "示例联系人053",
+  "remark": "雯雯",
+  "av": "雅",
+  "c": "#e08a5a",
+  "time": "20:27",
+  "bdg": 0,
+  "follow": false,
+  "corp": "个人客户",
+  "source": "官网注册",
+  "addWay": "扫码添加",
+  "added": "2025-12-24",
+  "nick": "星辰大海",
+  "wxid": "示例联系人054",
+  "gender": "女",
+  "region": "广西 南宁",
+  "tags": [
+   [
+    "小额付费",
+    "gold"
+   ],
+   [
+    "活跃",
+    "green"
+   ]
+  ],
+  "crm": {
+   "proj": "传奇世界",
+   "game": "传奇世界·复古",
+   "acct": "U56978520",
+   "role": "RC31509355",
+   "lv": 70,
+   "recharge": "¥8,866",
+   "lastLogin": "今天 20:17",
+   "lastRech": "01-02",
+   "reg": "2025-12-22",
+   "plat": "24youxi"
+  },
+  "intent": {
+   "score": 63,
+   "level": "中意向",
+   "desc": "稳定小额付费，续费意愿明确，处于「例行维护」阶段"
+  },
+  "words": [
+   {
+    "w": "月卡",
+    "n": 12
+   },
+   {
+    "w": "福利",
+    "n": 9
+   },
+   {
+    "w": "签到",
+    "n": 7
+   },
+   {
+    "w": "活动",
+    "n": 6
+   },
+   {
+    "w": "礼包",
+    "n": 5
+   }
+  ],
+  "qc": {
+   "score": 86,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无违规"
+    ],
+    [
+     "话术",
+     "pass",
+     "响应及时，续费引导自然"
+    ],
+    [
+     "风险",
+     "pass",
+     "无"
+    ],
+    [
+     "跟进",
+     "pass",
+     "月度触达规律"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "跟进",
+    "x": "月卡到期提醒，客户同意续费半年",
+    "tm": "今天 20:12",
+    "by": "白露"
+   },
+   {
+    "cf": "var(--gold)",
+    "tn": "充值",
+    "x": "充值 ¥328（半年卡）",
+    "tm": "今天 20:15",
+    "by": "白露"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥2,216（累充 ¥8,866）",
+    "tm": "01-02",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「扫码添加」渠道添加",
+    "tm": "2025-12-24",
+    "by": "白露"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "20:05",
+    "text": "月卡是不是到期了？今天没领到"
+   },
+   {
+    "f": "me",
+    "tm": "20:12",
+    "text": "雯雯的月卡昨天到期啦，续费可以领连续签到奖励，我给您发链接"
+   },
+   {
+    "f": "c",
+    "tm": "20:17",
+    "text": "续半年有没有优惠"
+   },
+   {
+    "f": "me",
+    "tm": "20:22",
+    "text": "半年卡 8 折，折下来每月省 12 元，还多送 6 张抽奖券"
+   },
+   {
+    "f": "c",
+    "tm": "20:27",
+    "text": "那行，续半年吧"
+   }
+  ]
+ },
+ {
+  "id": "c28",
+  "emp": "e9",
+  "type": "p",
+  "star": "three_star",
+  "name": "示例联系人055",
+  "remark": "亮仔",
+  "av": "亮",
+  "c": "#7aa87a",
+  "time": "07/11",
+  "bdg": 0,
+  "follow": true,
+  "corp": "个人客户",
+  "source": "广告投放",
+  "addWay": "搜索添加",
+  "added": "2026-02-02",
+  "nick": "龙吟九霄",
+  "wxid": "示例联系人056",
+  "gender": "男",
+  "region": "贵州 贵阳",
+  "tags": [
+   [
+    "沉睡",
+    "gray"
+   ],
+   [
+    "小额付费",
+    "gold"
+   ]
+  ],
+  "crm": {
+   "proj": "传奇世界",
+   "game": "传奇世界·复古",
+   "acct": "U69980915",
+   "role": "RC70331039",
+   "lv": 62,
+   "recharge": "¥5,439",
+   "lastLogin": "02-05 22:15",
+   "lastRech": "05-28",
+   "reg": "2026-01-31",
+   "plat": "guayou"
+  },
+  "intent": {
+   "score": 34,
+   "level": "待激活",
+   "desc": "连续 12 天未登录，会话沉睡，建议触发回流话术 + 回归礼包"
+  },
+  "words": [
+   {
+    "w": "没时间",
+    "n": 9
+   },
+   {
+    "w": "忙",
+    "n": 7
+   },
+   {
+    "w": "福利",
+    "n": 5
+   },
+   {
+    "w": "回归",
+    "n": 4
+   }
+  ],
+  "qc": {
+   "score": 74,
+   "items": [
+    [
+     "合规",
+     "pass",
+     "无违规"
+    ],
+    [
+     "话术",
+     "warn",
+     "近 3 次未回复客户消息，响应超时"
+    ],
+    [
+     "风险",
+     "pass",
+     "无流失投诉"
+    ],
+    [
+     "跟进",
+     "warn",
+     "超 7 天未主动跟进，建议今日触达"
+    ]
+   ]
+  },
+  "trace": [
+   {
+    "cf": "var(--blue)",
+    "tn": "跟进",
+    "x": "微信问候，客户回复「最近忙」",
+    "tm": "昨天 22:10",
+    "by": "白露"
+   },
+   {
+    "cf": "var(--green)",
+    "tn": "充值",
+    "x": "充值 ¥1,359（累充 ¥5,439）",
+    "tm": "05-28",
+    "by": "系统"
+   },
+   {
+    "cf": "var(--wx-primary)",
+    "tn": "添加",
+    "x": "客户通过「搜索添加」渠道添加",
+    "tm": "2026-02-02",
+    "by": "白露"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "tm": "21:40",
+    "text": "最近好忙，都没时间玩"
+   },
+   {
+    "f": "me",
+    "tm": "21:47",
+    "text": "亮仔，最近开区福利多，回来看看说不定有惊喜～"
+   },
+   {
+    "f": "c",
+    "tm": "21:54",
+    "text": "有啥福利"
+   },
+   {
+    "f": "me",
+    "tm": "22:01",
+    "text": "回归玩家专享：7 天双倍经验 + 回归礼包（含橙装碎片×20），我帮您留了名额"
+   }
+  ]
+ },
+ {
+  "id": "g1",
+  "emp": "e1",
+  "type": "g",
+  "star": "five_star",
+  "name": "传奇世界·复古 · 核心客户群",
+  "av": "传",
+  "c": "#7aa87a",
+  "time": "10:05",
+  "bdg": 3,
+  "follow": false,
+  "members": 132,
+  "myRole": "群主",
+  "owner": "林晓彤",
+  "notice": "今晚 8 点合区，排行榜按战力重算；上线领合区礼包。禁广告、禁私下交易。",
+  "gtags": [
+   [
+    "核心客户群",
+    "gold"
+   ],
+   [
+    "高活跃",
+    "green"
+   ]
+  ],
+  "kpi": {
+   "msg7": 312,
+   "cust7": 96,
+   "conv": "18%"
+  },
+  "mlist": [
+   {
+    "n": "周婷",
+    "r": "月下轻舞",
+    "tier": "five_star",
+    "admin": 1,
+    "c": "#d88ba8"
+   },
+   {
+    "n": "陈国豪",
+    "r": "巅峰丶豪哥",
+    "tier": "super_star",
+    "admin": 0,
+    "c": "#6f9fd8"
+   },
+   {
+    "n": "刘洋",
+    "r": "小小剑客",
+    "tier": "three_star",
+    "admin": 0,
+    "c": "#e08a5a"
+   },
+   {
+    "n": "赵鹏",
+    "r": "一刀999",
+    "tier": "five_star",
+    "admin": 0,
+    "c": "#7aa87a"
+   },
+   {
+    "n": "孙悦",
+    "r": "悦来越好",
+    "tier": "two_star",
+    "admin": 1,
+    "c": "#b08bd8"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "me",
+    "text": "欢迎来到核心客户群！每日福利同步～",
+    "tm": "08:40"
+   },
+   {
+    "f": "c",
+    "n": "刘洋",
+    "text": "礼包在哪领？",
+    "tm": "09:28"
+   },
+   {
+    "f": "me",
+    "text": "游戏内「活动-首充」页签领取～",
+    "tm": "09:30"
+   },
+   {
+    "f": "c",
+    "n": "周婷",
+    "text": "合区后排行怎么算呀",
+    "tm": "10:02"
+   },
+   {
+    "f": "me",
+    "text": "按战力重新分档，公告已置顶，大家看下～",
+    "tm": "10:05"
+   }
+  ]
+ },
+ {
+  "id": "g2",
+  "emp": "e2",
+  "type": "g",
+  "star": "four_star",
+  "name": "对决王城 · 公会会长群",
+  "av": "对",
+  "c": "#b08bd8",
+  "time": "09:40",
+  "bdg": 0,
+  "follow": false,
+  "members": 86,
+  "myRole": "群主",
+  "owner": "周慕云",
+  "notice": "本周六新区开服，公会入驻请在本群报名，名额有限。",
+  "gtags": [
+   [
+    "公会群",
+    "blue"
+   ],
+   [
+    "高活跃",
+    "green"
+   ]
+  ],
+  "kpi": {
+   "msg7": 208,
+   "cust7": 63,
+   "conv": "24%"
+  },
+  "mlist": [
+   {
+    "n": "王振宇",
+    "r": "一剑封喉",
+    "tier": "five_star",
+    "admin": 1,
+    "c": "#6f9fd8"
+   },
+   {
+    "n": "高子萱",
+    "r": "青衫故人",
+    "tier": "four_star",
+    "admin": 0,
+    "c": "#e08a5a"
+   },
+   {
+    "n": "罗嘉豪",
+    "r": "荒野猎手",
+    "tier": "two_star",
+    "admin": 0,
+    "c": "#7aa87a"
+   },
+   {
+    "n": "林傲",
+    "r": "霸王别姬",
+    "tier": "five_star",
+    "admin": 1,
+    "c": "#b08bd8"
+   },
+   {
+    "n": "张岚",
+    "r": "素手遮天",
+    "tier": "three_star",
+    "admin": 0,
+    "c": "#5b8fa8"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "me",
+    "text": "新区报名开始，回「公会名+人数」即可登记",
+    "tm": "09:10"
+   },
+   {
+    "f": "c",
+    "n": "王振宇",
+    "text": "蜀汉同盟 30 人",
+    "tm": "09:15"
+   },
+   {
+    "f": "me",
+    "text": "已登记，扶持名额给您留 30 个",
+    "tm": "09:16"
+   },
+   {
+    "f": "c",
+    "n": "林傲",
+    "text": "烟雨楼 22 人",
+    "tm": "09:40"
+   }
+  ]
+ },
+ {
+  "id": "g3",
+  "emp": "e3",
+  "type": "g",
+  "star": "four_star",
+  "name": "血饮天下 · 新区福利群",
+  "av": "血",
+  "c": "#5b8fa8",
+  "time": "14:35",
+  "bdg": 5,
+  "follow": false,
+  "members": 58,
+  "myRole": "群主",
+  "owner": "郑一鸣",
+  "notice": "新区 S208 今日 14:00 开服，进群领专属兑换码：XYTX208。",
+  "gtags": [
+   [
+    "新服群",
+    "blue"
+   ],
+   [
+    "福利",
+    "gold"
+   ]
+  ],
+  "kpi": {
+   "msg7": 156,
+   "cust7": 41,
+   "conv": "15%"
+  },
+  "mlist": [
+   {
+    "n": "唐婉清",
+    "r": "秋水长天",
+    "tier": "one_star",
+    "admin": 0,
+    "c": "#e08a5a"
+   },
+   {
+    "n": "邓超群",
+    "r": "铁马冰河",
+    "tier": "four_star",
+    "admin": 1,
+    "c": "#7aa87a"
+   },
+   {
+    "n": "冯少华",
+    "r": "醉卧沙场",
+    "tier": "four_star",
+    "admin": 0,
+    "c": "#b08bd8"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "me",
+    "text": "新区 S208 开服，兑换码 XYTX208，先到先得",
+    "tm": "14:02"
+   },
+   {
+    "f": "c",
+    "n": "邓超群",
+    "text": "兑换码能用几次？",
+    "tm": "14:20"
+   },
+   {
+    "f": "me",
+    "text": "每个账号一次，礼包含 500 元宝",
+    "tm": "14:22"
+   },
+   {
+    "f": "c",
+    "n": "唐婉清",
+    "text": "领到啦谢谢",
+    "tm": "14:35"
+   }
+  ]
+ },
+ {
+  "id": "g4",
+  "emp": "e4",
+  "type": "g",
+  "star": "five_star",
+  "name": "格斗英雄 · VIP 服务群",
+  "av": "格",
+  "c": "#c9873f",
+  "time": "10:45",
+  "bdg": 0,
+  "follow": false,
+  "members": 42,
+  "myRole": "群主",
+  "owner": "何书桓",
+  "notice": "VIP 客户专属服务群，充值/活动/客诉优先处理，@客服 24h 响应。",
+  "gtags": [
+   [
+    "VIP群",
+    "gold"
+   ],
+   [
+    "高净值",
+    "gold"
+   ]
+  ],
+  "kpi": {
+   "msg7": 98,
+   "cust7": 34,
+   "conv": "31%"
+  },
+  "mlist": [
+   {
+    "n": "徐天宇",
+    "r": "傲视群雄",
+    "tier": "super_star",
+    "admin": 0,
+    "c": "#7aa87a"
+   },
+   {
+    "n": "马晓东",
+    "r": "烈焰焚天",
+    "tier": "three_star",
+    "admin": 0,
+    "c": "#b08bd8"
+   },
+   {
+    "n": "梁静怡",
+    "r": "素年锦时",
+    "tier": "four_star",
+    "admin": 1,
+    "c": "#5b8fa8"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "me",
+    "text": "本周 VIP 专属累充活动已上线，详情见图",
+    "tm": "10:30"
+   },
+   {
+    "f": "c",
+    "n": "徐天宇",
+    "text": "帮我看下我这档返利多少",
+    "tm": "10:42"
+   },
+   {
+    "f": "me",
+    "text": "您当前累充档位返利 12%，今天充值额外加 3%",
+    "tm": "10:45"
+   }
+  ]
+ },
+ {
+  "id": "g5",
+  "emp": "e5",
+  "type": "g",
+  "star": "four_star",
+  "name": "幻斗英雄 · 玩家交流群",
+  "av": "幻",
+  "c": "#8a7fb8",
+  "time": "16:33",
+  "bdg": 3,
+  "follow": false,
+  "members": 210,
+  "myRole": "群主",
+  "owner": "苏若彤",
+  "notice": "玩家自由交流，禁止广告与私下交易，违规踢群。",
+  "gtags": [
+   [
+    "玩家群",
+    "gray"
+   ],
+   [
+    "活跃",
+    "green"
+   ]
+  ],
+  "kpi": {
+   "msg7": 428,
+   "cust7": 132,
+   "conv": "9%"
+  },
+  "mlist": [
+   {
+    "n": "朱倩倩",
+    "r": "浅笑安然",
+    "tier": "one_star",
+    "admin": 0,
+    "c": "#b08bd8"
+   },
+   {
+    "n": "何伟诚",
+    "r": "寒江孤影",
+    "tier": "three_star",
+    "admin": 1,
+    "c": "#5b8fa8"
+   },
+   {
+    "n": "蒋雯丽",
+    "r": "紫电清霜",
+    "tier": "four_star",
+    "admin": 0,
+    "c": "#c9873f"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "n": "何伟诚",
+    "text": "这关怎么过啊，卡三天了",
+    "tm": "16:02"
+   },
+   {
+    "f": "me",
+    "text": "换个冰系阵容，boss 有火抗",
+    "tm": "16:10"
+   },
+   {
+    "f": "c",
+    "n": "朱倩倩",
+    "text": "新手该练哪个角色",
+    "tm": "16:30"
+   },
+   {
+    "f": "me",
+    "text": "前期练风系主角，推图最快",
+    "tm": "16:33"
+   }
+  ]
+ },
+ {
+  "id": "g6",
+  "emp": "e6",
+  "type": "g",
+  "star": "four_star",
+  "name": "噬龙天道 · 跨服战队群",
+  "av": "噬",
+  "c": "#4f9e86",
+  "time": "11:20",
+  "bdg": 8,
+  "follow": false,
+  "members": 68,
+  "myRole": "群主",
+  "owner": "陆知微",
+  "notice": "跨服战本周五 20:00 开战，请各队长在群内确认出战名单。",
+  "gtags": [
+   [
+    "战队群",
+    "blue"
+   ],
+   [
+    "高活跃",
+    "green"
+   ]
+  ],
+  "kpi": {
+   "msg7": 187,
+   "cust7": 52,
+   "conv": "27%"
+  },
+  "mlist": [
+   {
+    "n": "郭俊杰",
+    "r": "乱世枭雄",
+    "tier": "five_star",
+    "admin": 1,
+    "c": "#5b8fa8"
+   },
+   {
+    "n": "叶秋霜",
+    "r": "九天揽月",
+    "tier": "five_star",
+    "admin": 0,
+    "c": "#c9873f"
+   },
+   {
+    "n": "董浩然",
+    "r": "雷霆万钧",
+    "tier": "three_star",
+    "admin": 0,
+    "c": "#8a7fb8"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "me",
+    "text": "跨服战名单确认，回复「队伍+战力」",
+    "tm": "11:00"
+   },
+   {
+    "f": "c",
+    "n": "郭俊杰",
+    "text": "蜀汉一队 平均战力 82 万",
+    "tm": "11:12"
+   },
+   {
+    "f": "c",
+    "n": "叶秋霜",
+    "text": "烟雨二队 76 万，还差 2 人",
+    "tm": "11:20"
+   }
+  ]
+ },
+ {
+  "id": "g7",
+  "emp": "e7",
+  "type": "g",
+  "star": "four_star",
+  "name": "万界无双 · 日常福利群",
+  "av": "万",
+  "c": "#c46b6b",
+  "time": "08:07",
+  "bdg": 8,
+  "follow": false,
+  "members": 356,
+  "myRole": "群主",
+  "owner": "江雪莹",
+  "notice": "每日签到、限时福利在本群同步，禁广告刷屏。",
+  "gtags": [
+   [
+    "福利群",
+    "gold"
+   ],
+   [
+    "活跃",
+    "green"
+   ]
+  ],
+  "kpi": {
+   "msg7": 512,
+   "cust7": 168,
+   "conv": "7%"
+  },
+  "mlist": [
+   {
+    "n": "许文强",
+    "r": "白马银枪",
+    "tier": "four_star",
+    "admin": 1,
+    "c": "#c9873f"
+   },
+   {
+    "n": "范婷婷",
+    "r": "南风知我意",
+    "tier": "one_star",
+    "admin": 0,
+    "c": "#8a7fb8"
+   },
+   {
+    "n": "蔡志明",
+    "r": "云中君",
+    "tier": "two_star",
+    "admin": 0,
+    "c": "#4f9e86"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "me",
+    "text": "今日签到礼：元宝×200，回复「签到」",
+    "tm": "08:05"
+   },
+   {
+    "f": "c",
+    "n": "许文强",
+    "text": "签到",
+    "tm": "08:06"
+   },
+   {
+    "f": "me",
+    "text": "已记录，连续签到 7 天额外送抽奖券",
+    "tm": "08:07"
+   }
+  ]
+ },
+ {
+  "id": "g8",
+  "emp": "e8",
+  "type": "g",
+  "star": "five_star",
+  "name": "烈火封神 · 高战力群",
+  "av": "烈",
+  "c": "#6b8fc4",
+  "time": "17:40",
+  "bdg": 0,
+  "follow": false,
+  "members": 47,
+  "myRole": "群主",
+  "owner": "顾南洲",
+  "notice": "本群仅邀战力榜前 100 玩家，合区/跨服信息优先同步。",
+  "gtags": [
+   [
+    "高战群",
+    "gold"
+   ],
+   [
+    "核心客户群",
+    "gold"
+   ]
+  ],
+  "kpi": {
+   "msg7": 143,
+   "cust7": 38,
+   "conv": "35%"
+  },
+  "mlist": [
+   {
+    "n": "程磊",
+    "r": "战神归来",
+    "tier": "super_star",
+    "admin": 1,
+    "c": "#8a7fb8"
+   },
+   {
+    "n": "苏晓峰",
+    "r": "逍遥子",
+    "tier": "four_star",
+    "admin": 0,
+    "c": "#4f9e86"
+   },
+   {
+    "n": "余思远",
+    "r": "墨染青衣",
+    "tier": "four_star",
+    "admin": 0,
+    "c": "#c46b6b"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "me",
+    "text": "合区后战力榜重排，本群成员优先保留排名位",
+    "tm": "17:20"
+   },
+   {
+    "f": "c",
+    "n": "程磊",
+    "text": "我这 88 级能进前几",
+    "tm": "17:26"
+   },
+   {
+    "f": "me",
+    "text": "按当前战力预估 Top5，稳的",
+    "tm": "17:28"
+   },
+   {
+    "f": "c",
+    "n": "苏晓峰",
+    "text": "我 76 级呢",
+    "tm": "17:40"
+   }
+  ]
+ },
+ {
+  "id": "g9",
+  "emp": "e9",
+  "type": "g",
+  "star": "four_star",
+  "name": "传奇世界 · 二服交流群",
+  "av": "传",
+  "c": "#d4544b",
+  "time": "20:18",
+  "bdg": 3,
+  "follow": false,
+  "members": 95,
+  "myRole": "群主",
+  "owner": "白露",
+  "notice": "二服日常交流，组队打宝请在本群喊人。",
+  "gtags": [
+   [
+    "玩家群",
+    "gray"
+   ],
+   [
+    "组队",
+    "green"
+   ]
+  ],
+  "kpi": {
+   "msg7": 176,
+   "cust7": 58,
+   "conv": "11%"
+  },
+  "mlist": [
+   {
+    "n": "宋建军",
+    "r": "风清扬",
+    "tier": "one_star",
+    "admin": 0,
+    "c": "#4f9e86"
+   },
+   {
+    "n": "曾雅雯",
+    "r": "星辰大海",
+    "tier": "four_star",
+    "admin": 1,
+    "c": "#c46b6b"
+   },
+   {
+    "n": "彭亮",
+    "r": "龙吟九霄",
+    "tier": "three_star",
+    "admin": 0,
+    "c": "#6b8fc4"
+   }
+  ],
+  "msgs": [
+   {
+    "f": "c",
+    "n": "彭亮",
+    "text": "有人组队打祖玛吗",
+    "tm": "20:10"
+   },
+   {
+    "f": "c",
+    "n": "曾雅雯",
+    "text": "我来，几点",
+    "tm": "20:15"
+   },
+   {
+    "f": "me",
+    "text": "晚上 9 点固定队，还差 1 个输出位",
+    "tm": "20:18"
+   }
+  ]
+ }
+];
+var SCRIPTS={
+ '欢迎语':[{n:'新客欢迎',t:'{昵称}您好，我是您的专属客户经理{备注}，很高兴为您服务！有任何游戏问题都可以随时找我～'},{n:'进群欢迎',t:'欢迎{昵称}加入大家庭！群内每日同步福利活动，有问题随时@我。'}],
+ '破冰':[{n:'兴趣破冰',t:'{昵称}最近在游戏里玩得怎么样呀？有没有遇到什么卡点，我帮您看看～'},{n:'关怀问候',t:'好久不见啦{昵称}，最近忙什么呢？游戏里有新活动想第一时间告诉您～'}],
+ '活动':[{n:'充值活动',t:'{昵称}，本周充值满 300 送橙色装备箱，活动今晚 24:00 截止，别错过啦～'},{n:'合区公告',t:'各位玩家，今晚 8 点合区，排行榜按战力重算，上线即可领取合区礼包！'}],
+ '催充':[{n:'限时催充',t:'{昵称}您关注的礼包还有 2 小时下架，现在充值最划算，需要我帮您预留吗？'},{n:'断充唤醒',t:'{昵称}好久没充啦，本月累充档位还差一点就能升级，差的部分我帮您算了下，要看看吗？'}],
+ '挽回':[{n:'流失挽回',t:'{昵称}好久没见您上线啦，特意给您留了回归专属礼包，回来看看吧～'},{n:'合区召回',t:'{昵称}你们区马上和一区合服了，合服后竞争更激烈，提前回来把战力提上去，我给您留了合服补偿～'}]
+};
+/* 客户标签体系（对齐企微官版）：企业标签（管理员统一下发）/ 系统标签（系统自动打撤）/ 个人标签（员工自定义） */
+var TAGTREE=[
+ {cat:'企业标签',c:'#3370FF',groups:[
+  {g:'游戏偏好',tags:['烈焰横空','烈焰之怒','烈火一刀（复古）','战火英雄（合击）','雷霆传奇（九离合击）','传奇世界·复古','对决王城','格斗英雄','幻斗英雄','烈火封神','噬龙天道','血饮天下','万界无双']},
+  {g:'消费层级',tags:['高净值','大R','中R','小R','小额付费','未付费']},
+  {g:'活跃状态',tags:['活跃','沉睡','流失预警','断登','断充','回流']},
+  {g:'设备机型',tags:['iOS','安卓','iOS商城','PC模拟器']},
+  {g:'福利品',tags:['生日礼包','回归礼包','VIP礼盒','周福利']}
+ ]},
+ {cat:'系统标签',c:'#00b42a',groups:[
+  {g:'生命周期',tags:['新客','稳定期','衰退期','已流失']},
+  {g:'行为特征',tags:['充值意向','夜猫子','周末玩家','价格敏感','多开党']},
+  {g:'风控标记',tags:['被删除','弃游','退区号','异地登录']}
+ ]},
+ {cat:'个人标签',c:'#7b5fc0',groups:[
+  {g:'我的标记',tags:['企业主','团队客户','VIP','重点维护','可培养','待唤醒']}
+ ]}
+];
+var st={emp:'e1',cur:'c1',tab:'profile',star:'all',scCat:'欢迎语',tags:null,plat:'24youxi',memF:'all',tagQ:'',tagOpen:{}};
+function emp(id){var r=null;ORG.forEach(function(o){o.emps.forEach(function(e){if(e.id===id)r=e})});return r||ORG[0].emps[0]}
+function conv(){return CONVS.find(function(c){return c.id===st.cur})}
+function starHtml(s){var d=STARC[s]||['—','#86909c'];return '<span style="background:'+d[1]+'1a;color:'+d[1]+'">'+d[0]+'</span>'}
+function fillVars(t){var c=conv();return String(t).replace(/\{昵称\}/g,c.nick||c.name).replace(/\{备注\}/g,c.remark||emp(st.emp).name).replace(/\{企业\}/g,c.corp||'')}
+function scText(t){return esc(t).replace(/\{(昵称|备注|企业)\}/g,'<span class="var">{$1}</span>')}
+/* ---------- 账号弹层 ---------- */
+function rAcc(){
+ var h='';ORG.forEach(function(o){h+='<div class="ap-org">'+esc(o.org)+'</div>';o.emps.forEach(function(e){
+  h+='<div class="ap-emp'+(st.emp===e.id?' active':'')+'" data-emp="'+e.id+'"><div class="ae-av" style="background:'+e.c+'">'+esc(e.name[0])+(e.bdg?'<span class="ae-bdg">'+e.bdg+'</span>':'')+'<span class="ae-dot '+(e.on?'on':'off')+'"></span></div><div style="flex:1;min-width:0"><div class="ae-n">'+esc(e.name)+'</div><div class="ae-t">'+esc(e.title)+(e.on?'':' · 离线')+'</div></div></div>'})});
+ $('apList').innerHTML=h;
+ var all=[];ORG.forEach(function(o){all=all.concat(o.emps)});var on=all.filter(function(e){return e.on}).length;
+ $('apStatus').innerHTML='<span class="active"><span class="num">'+on+'</span> 在线</span><span><span class="num">'+(all.length-on)+'</span> 离线</span><span><span class="num">'+all.length+'</span> 全部</span>';
+ var me=emp(st.emp);$('empAv').textContent=me.name[0];$('empEntry').style.background=me.c;$('empDot').className='ed '+(me.on?'on':'off');
+ var tb=0;CONVS.forEach(function(c){if(c.emp===st.emp)tb+=c.bdg||0});$('empBdg').textContent=tb||'';$('empBdg').style.display=tb?'':'none'}
+/* ---------- 会话列 ---------- */
+function rFilters(){$('lpFilters').innerHTML=[['all','全部'],['super_star','超星'],['five_star','五星'],['four_star','四星'],['low','三星↓'],['follow','待跟进']].map(function(f){return '<span class="lpf'+(st.star===f[0]?' active':'')+'" data-star="'+f[0]+'">'+f[1]+'</span>'}).join('')}
+function match(c){if(c.emp!==st.emp)return false;if(st.star==='all')return true;if(st.star==='follow')return !!c.follow;if(st.star==='low')return c.type==='p'&&(c.star==='three_star'||c.star==='two_star'||c.star==='one_star');return c.star===st.star}
+function rList(){
+ var list=CONVS.filter(match);
+ $('convs').innerHTML=list.length?list.map(function(c){var lm=c.msgs[c.msgs.length-1];var pv=lm?(lm.text||(lm.kind==='img'?'[图片]':'')):' ';
+  var badge=c.type==='g'?'<span class="star" style="background:'+STARC[c.star][1]+'1a;color:'+STARC[c.star][1]+'">群</span>':starHtml(c.star).replace('<span','<span class="star"');
+  var tail=c.type==='g'?(' · '+c.members+'人'):'';
+  return '<div class="ci'+(c.id===st.cur?' sel':'')+'" data-id="'+c.id+'"><div class="av" style="background:'+c.c+'">'+esc(c.av)+(c.bdg?'<span class="bdg">'+c.bdg+'</span>':'')+'</div><div class="mn"><div class="tp">'+badge+'<span class="nm">'+esc(c.name)+(c.remark?'（'+esc(c.remark)+'）':'')+tail+'</span><span class="tm">'+esc(c.time)+'</span></div><div class="pv">'+esc(pv)+'</div></div></div>'}).join('')
+  :'<div style="text-align:center;color:var(--muted);padding:40px 0;font-size:12px">该分类下暂无客户</div>'}
+/* ---------- 聊天区 ---------- */
+function rChat(){var c=conv();var me=emp(st.emp);
+ $('cName').textContent=c.name+(c.type==='g'?'（'+c.members+'人）':'');
+ var cs=$('cStar'),d=STARC[c.star]||['','#86909c'];
+ if(c.type==='p'){cs.style.display='';cs.textContent=d[0];cs.style.background=d[1]+'1a';cs.style.color=d[1]}else{cs.style.display='none'}
+ $('cSub').textContent=c.type==='g'?('客户群 · 群主 '+c.owner):('来源 '+c.source+' · 负责人 '+me.name);
+ $('gmW').style.display=c.type==='g'?'':'none';$('gmMenu').classList.remove('open');
+ $('msgs').innerHTML='<div class="day">今天</div>'+c.msgs.map(function(m){var mine=m.f==='me';
+  var body=m.kind==='img'?'<div class="bub imgmsg">[图片]</div>':'<div class="bub">'+esc(m.text||'')+'</div>';
+  var who=(c.type==='g'&&!mine)?'<div class="who">'+esc(m.n||'客户')+'</div>':'';
+  var av=mine?('<div class="av" style="background:'+me.c+'">'+esc(me.name[0])+'</div>'):('<div class="av" style="background:'+c.c+'">'+esc((m.n||c.name||'客')[0])+'</div>');
+  return '<div class="m '+(mine?'sent':'')+'">'+av+'<div class="body">'+who+body+'<div class="mtime">'+esc(m.tm)+'</div></div></div>'}).join('');
+ $('msgs').scrollTop=99999}
+/* ---------- 右侧边栏 ---------- */
+function tabsDef(){var c=conv();if(c.type==='g')return[['ginfo','群聊信息'],['gstat','群统计']];return[['profile','客户画像'],['trace','跟进日志'],['tags','客户标签'],['scripts','话术库']]}
+function rTabs(){var d=tabsDef();if(d.map(function(x){return x[0]}).indexOf(st.tab)<0)st.tab=d[0][0];$('sbtabs').innerHTML=d.map(function(t){return '<button class="'+(st.tab===t[0]?'on':'')+'" data-tab="'+t[0]+'">'+t[1]+'</button>'}).join('')}
+function donut(pct,color,center){var r=30,c=2*Math.PI*r;return '<svg width="72" height="72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="'+r+'" fill="none" stroke="var(--border)" stroke-width="9"/><circle cx="36" cy="36" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+(pct/100*c).toFixed(1)+' '+c.toFixed(1)+'" transform="rotate(-90 36 36)"/><text x="36" y="41" text-anchor="middle" font-size="15" font-weight="700" fill="var(--wx-text)">'+esc(center)+'</text></svg>'}
+function grid(arr){return '<div class="card">'+arr.map(function(f){return '<div class="f"><div class="k">'+esc(f[0])+'</div><div class="v'+(f[2]||'')+'">'+f[1]+'</div></div>'}).join('')+'</div>'}
+function archHtml(){var c=conv(),me=emp(st.emp),h='',d=STARC[c.star]||['—','#86909c'];
+ if(c.type==='g'){
+  h+='<div class="hd"><div class="av" style="background:'+c.c+'">'+esc(c.av)+'</div><div style="min-width:0"><div class="nm">'+esc(c.name)+'</div><div class="rm"><b>'+c.members+'</b> 人 · 我的身份 <b>'+esc(c.myRole)+'</b><br>负责人 '+esc(c.owner)+' · 企微客户群</div></div></div>';
+  h+='<div class="tags">'+(c.gtags||[]).map(function(t){return '<span class="tg '+t[1]+'">'+esc(t[0])+'</span>'}).join('')+'</div>';
+ }else{
+  h+='<div class="hd"><div class="av" style="background:'+c.c+'">'+esc(c.av)+'</div><div style="min-width:0"><div class="nm">'+esc(c.name)+'<span class="ed" id="remarkE" title="编辑备注">✎</span></div><div class="rm">昵称 <b>'+esc(c.nick)+'</b> · '+esc(c.wxid)+'<br>添加 '+esc(c.added)+'（'+esc(c.addWay)+'）· 负责人 <b>'+esc(me.name)+'</b></div></div></div>';
+  h+='<div class="tags">'+(c.tags||[]).map(function(t){return '<span class="tg '+t[1]+'">'+esc(t[0])+'</span>'}).join('')+'</div>';
+  h+='<div class="role-sec"><span class="lk">角色ID</span><span class="role-val">'+esc(c.crm.role)+'</span><span class="plat"><span data-plat="24youxi" class="'+(st.plat==='24youxi'?'on':'')+'">贰肆sdk</span><span data-plat="guayou" class="'+(st.plat==='guayou'?'on':'')+'">瓜游sdk</span></span></div>';
+  h+=grid([['项目',esc(c.crm.proj)],['游戏',esc(c.crm.game)],['账号ID',esc(c.crm.acct)],['用户等级','Lv'+c.crm.lv],['累计充值','<span style="color:var(--gold)">'+esc(c.crm.recharge)+'</span>'],['客户层级','<span style="color:'+d[1]+'">'+d[0]+'</span>'],['最后登录',esc(c.crm.lastLogin)],['最后充值时间',esc(fullDt(c.crm.lastRech,'rech'))],['最近登录IP','<span style="font-family:ui-monospace,Menlo,monospace">'+ipOf(c)+'</span>'],['注册时间',esc(c.crm.reg)]]);
+ }
+ $('archEl').innerHTML=h}
+var PROJ_PARAM=[
+ {proj:'全局默认',login:24,deepLogin:72,rech:72,deepRech:168,custom:0},
+ {proj:'传奇世界',login:24,deepLogin:72,rech:72,deepRech:168,custom:0},
+ {proj:'对决王城',login:48,deepLogin:120,rech:120,deepRech:336,custom:1},
+ {proj:'格斗英雄',login:24,deepLogin:72,rech:72,deepRech:168,custom:0},
+ {proj:'幻斗英雄',login:24,deepLogin:72,rech:72,deepRech:168,custom:0},
+ {proj:'烈火封神',login:24,deepLogin:72,rech:72,deepRech:168,custom:0},
+ {proj:'噬龙天道',login:12,deepLogin:48,rech:48,deepRech:120,custom:1},
+ {proj:'血饮天下',login:24,deepLogin:72,rech:72,deepRech:168,custom:0},
+ {proj:'万界无双',login:24,deepLogin:72,rech:72,deepRech:168,custom:0}
+];
+function paramOf(p){var r=null;PROJ_PARAM.forEach(function(x){if(x.proj===p)r=x});return r||PROJ_PARAM[0]}
+function hoursAgo(s){if(!s||s==='未充值')return 99999;if(/今天/.test(s))return 0;if(/昨天/.test(s))return 24;var m=String(s).match(/(\d{2})-(\d{2})/);if(!m)return 99999;return Math.max(0,((9-(+m[1]))*30+(8-(+m[2])))*24)}
+function hrsTxt(h){if(h>=99999)return '—';return h>=48?Math.round(h/24)+' 天':h+' 小时'}
+/* 稳定哈希：由字符串派生演示数据（IP / 补全的时分秒），保证同一客户每次打开结果一致 */
+function hash32(s){var h=2166136261;s=String(s);for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=(h*16777619)>>>0}return h}
+function pad2(n){return ('0'+n).slice(-2)}
+/* 最近登录IP：由账号ID哈希派生（原型演示，真实环境取登录日志接口） */
+function ipOf(c){var h=hash32(c.crm.acct||c.name);return [113,117,119,183,220,223,39,42,101,111][h%10]+'.'+((h>>>4&255)||1)+'.'+((h>>>12&255)||1)+'.'+((h>>>20&255)||1)}
+/* 补全日期时间为 YYYY-MM-DD hh:mm:ss：dateStr 支持 YYYY-MM-DD / MM-DD / MM-DD HH:mm / 今天 HH:mm / 昨天 HH:mm；已有时分则保留并仅补秒 */
+function fullDt(dateStr,salt){
+ if(!dateStr||dateStr==='未充值')return '—';
+ var s=String(dateStr),h=hash32(s+(salt||''));
+ var ss=pad2((h>>>11)%60);
+ var t=s.match(/^(\d{4}-\d{2}-\d{2})(?:\s+(\d{2}:\d{2}))?/);
+ if(t)return t[1]+' '+(t[2]?t[2]+':'+ss:pad2(h%24)+':'+pad2((h>>>5)%60)+':'+ss);
+ var mdt=s.match(/^(\d{2}-\d{2})(?:\s+(\d{2}:\d{2}))?/);
+ if(mdt)return '2026-'+mdt[1]+' '+(mdt[2]?mdt[2]+':'+ss:pad2(h%24)+':'+pad2((h>>>5)%60)+':'+ss);
+ var td=s.match(/^(今天|昨天)\s*(\d{2}:\d{2})/);if(td)return '2026-09-'+(td[1]==='今天'?'14':'13')+' '+td[2]+':'+ss;
+ return s}
+/* 小程序会员等级（按累计充值金额门槛）· 积分 = 累计充值 ÷ 10 向下取整 */
+var MEM=[
+ {n:'普通会员',min:0,c:'#b0b3b8',ic:'🥉',rt:'新人礼包 · 无折扣'},
+ {n:'白银会员',min:1000,c:'#86909c',ic:'🥈',rt:'9.8 折 · 专属客服通道'},
+ {n:'黄金会员',min:5000,c:'#a87614',ic:'🥇',rt:'9.5 折 · 生日礼包'},
+ {n:'铂金会员',min:20000,c:'#5e6ad8',ic:'💎',rt:'9 折 · 内测资格'},
+ {n:'钻石会员',min:50000,c:'#7b5fc0',ic:'👑',rt:'8.5 折 · 1v1 专属顾问'}
+];
+function memOf(c){var amt=parseInt(String(c.crm.recharge).replace(/[^\d]/g,''),10)||0;
+ var i=0;for(var k=MEM.length-1;k>=0;k--){if(amt>=MEM[k].min){i=k;break}}
+ var nx=MEM[i+1]||null;
+ var pct=nx?Math.min(100,Math.round((amt-MEM[i].min)/(nx.min-MEM[i].min)*100)):100;
+ return {level:MEM[i].n,idx:i,c:MEM[i].c,ic:MEM[i].ic,rt:MEM[i].rt,amt:amt,points:Math.floor(amt/10),next:nx?nx.n:null,need:nx?Math.max(0,nx.min-amt):0,pct:pct}}
+function dynOf(c){
+ var th=paramOf(c.crm.proj);
+ var hLogin=hoursAgo(c.crm.lastLogin),hRech=hoursAgo(c.crm.lastRech);
+ var amt=parseInt(String(c.crm.recharge).replace(/[^\d]/g,''),10)||0;
+ var noPay=c.crm.lastRech==='未充值';
+ var brkLogin=hLogin>=th.login,deepLogin=hLogin>=th.deepLogin;
+ var brkRech=!noPay&&hRech>=th.rech,deepRech=!noPay&&hRech>=th.deepRech;
+ var sw={super_star:5,five_star:4,four_star:3,three_star:2,two_star:1,one_star:1}[c.star]||1;
+ var hi=sw>=4,mid=sw===3;
+ var risk=0;if(brkLogin||brkRech)risk=1;if(deepLogin||deepRech)risk=2;
+ var pri,priC,advice;
+ if(hi&&risk===2){pri='P0 紧急维护';priC='#f53f3f';advice='建议今日电话回访 + 专属回归礼包，48h 未响应升级主管跟进'}
+ else if((hi&&risk===1)||(mid&&risk===2)){pri='P1 重点维护';priC='#ff7d00';advice='建议 24h 内电话触达，配合回归 / 充值活动挽留'}
+ else if(risk>=1){pri='P2 常规维护';priC='#165dff';advice='纳入批量唤醒名单，推送回流活动话术'}
+ else{pri='P3 日常保持';priC='#00b42a';advice='保持现有跟进节奏，活动节点触达即可'}
+ var consume=amt===0?'未付费':(amt>=10000?'高消费':(amt>=2000?'中消费':'低消费'));
+ var loginScore=hLogin<th.login?40:(hLogin<th.deepLogin?20:4);
+ var rechScore=noPay?(amt>0?10:0):(hRech<th.rech?40:(hRech<th.deepRech?20:4));
+ var starScore={super_star:20,five_star:16,four_star:12,three_star:8,two_star:4,one_star:2}[c.star]||2;
+ var score=loginScore+rechScore+starScore;
+ var lTxt=deepLogin?'深度断登 '+hrsTxt(hLogin):(brkLogin?'断登 '+hrsTxt(hLogin):'登录活跃');
+ var rTxt=noPay?'未付费':(deepRech?'深度断充 '+hrsTxt(hRech):(brkRech?'断充 '+hrsTxt(hRech):'充值活跃'));
+ var mem=memOf(c);
+ var chips=[{t:c.crm.game,c:'#1677ff'},{t:consume,c:(consume==='高消费'?'#ff7d00':(consume==='未付费'?'#86909c':'#1677ff'))},{t:lTxt,c:(brkLogin?'#f53f3f':'#00b42a')},{t:rTxt,c:(noPay?'#86909c':(brkRech?'#ff7d00':'#00b42a'))}];
+ (c.tags||[]).forEach(function(t){chips.push({t:t[0],c:'#7b5fc0'})});
+ return {score:score,pri:pri,priC:priC,advice:advice,stTxt:lTxt+' · '+rTxt,chips:chips,th:th,mem:mem,hLogin:hLogin,hRech:hRech,noPay:noPay,brkLogin:brkLogin,brkRech:brkRech}}
+function memCard(m){
+ var h='<div class="memcard"><div class="mbg">'+m.ic+'</div><div class="mmd">';
+ h+='<div class="mlv" style="color:'+m.c+'">'+esc(m.level)+'<em style="color:'+m.c+';background:'+m.c+'1a">Lv'+(m.idx+1)+'</em></div>';
+ h+='<div class="mrt">'+esc(m.rt)+'</div>';
+ h+='<div class="mbar"><i style="width:'+m.pct+'%;background:'+m.c+'"></i></div>';
+ h+='<div class="mup">'+(m.next?'距 '+esc(m.next)+' 还需充值 ¥'+m.need.toLocaleString()+'（'+m.pct+'%）':'已达最高等级')+'</div>';
+ h+='</div><div class="mpt"><div class="p1">'+m.points.toLocaleString()+'</div><div class="p2">当前积分</div></div></div>';
+ return h}
+function profileHtml(c){var d=dynOf(c),th=d.th,mem=d.mem;var h='';
+ h+='<div class="sect">客户动态<span class="slk" data-pmopen="1">⚙ 口径配置</span></div><div class="gauge"><div class="ring">'+donut(d.score,d.score>=70?'var(--green)':(d.score>=40?'var(--gold)':'var(--red)'),d.score)+'</div><div class="gi"><div class="gt"><span style="display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;color:#fff;background:'+d.priC+'">'+esc(d.pri)+'</span></div><div class="gd">'+esc(d.stTxt)+'<br>💡 '+esc(d.advice)+'</div></div></div>';
+ h+='<div class="tags">'+d.chips.map(function(t){return '<span class="tg" style="color:'+t.c+';background:'+t.c+'1a">'+esc(t.t)+'</span>'}).join('')+'</div>';
+ var isCus=paramOf(c.crm.proj).custom===1&&c.crm.proj!=='全局默认';
+ h+='<div class="thline">判定口径 · <b>'+esc(c.crm.proj)+'</b>（'+(isCus?'项目自定义':'继承全局默认')+'）：断登 ≥ <b>'+th.login+'h</b>，深度断登 ≥ <b>'+th.deepLogin+'h</b>，断充 ≥ <b>'+th.rech+'h</b>，深度断充 ≥ <b>'+th.deepRech+'h</b><br>实测值：最后登录距今 <b style="color:'+(d.brkLogin?'var(--red)':'var(--green)')+'">'+hrsTxt(d.hLogin)+'</b>，最后充值距今 <b style="color:'+(d.noPay?'var(--muted)':(d.brkRech?'var(--red)':'var(--green)'))+'">'+hrsTxt(d.hRech)+'</b></div>';
+ h+='<div class="sect">小程序会员等级 / 积分</div>'+memCard(mem);
+ h+='<div class="sect">客户来源</div>'+grid([['企业主体',esc(c.corp)],['来源渠道',esc(c.source)],['添加方式',esc(c.addWay)],['添加时间','<span style="font-family:ui-monospace,Menlo,monospace;font-weight:500">'+esc(fullDt(c.added,'add'))+'</span>'],['地区',esc(c.region)]]);
+ var mx=Math.max.apply(null,c.words.map(function(w){return w.n}).concat([1]));
+ h+='<div class="sect">会话关键词</div><div class="cloud">'+c.words.map(function(w,i){return '<span class="wd" data-word="'+esc(w.w)+'" style="font-size:'+(12+Math.round(w.n/mx*10))+'px;color:'+['var(--blue)','var(--gold)','var(--green)','var(--purple)','var(--red)'][i%5]+'">'+esc(w.w)+'</span>'}).join('')+'</div>';
+ h+='<div class="sect">AI 会话质检</div><div class="qc"><div class="qh"><span>🤖 质检评估 · 基于销冠话术蒸馏</span><span class="qs">'+c.qc.score+'</span></div><div class="qb">'+c.qc.items.map(function(q){return '<div class="qi"><span class="st '+q[1]+'">'+(q[1]==='pass'?'达标':q[1]==='warn'?'提醒':'风险')+'</span><span class="dim">'+esc(q[0])+'</span><div>'+esc(q[2])+'</div></div>'}).join('')+'</div></div>';
+ h+='<div class="note">AI 定位为辅助质检与查询窗口，不做一键发送；请结合实时会话自行组织表达。</div>';
+ return h}
+/* ---------- 参数管理弹窗 · 项目册断登/断充判定口径 ---------- */
+var PARAM_DEF={login:24,deepLogin:72,rech:72,deepRech:168};
+var PM_KEYS=['login','deepLogin','rech','deepRech'];
+var PM_D=null;
+function pmCopy(){return PROJ_PARAM.map(function(x){return{proj:x.proj,login:x.login,deepLogin:x.deepLogin,rech:x.rech,deepRech:x.deepRech,custom:x.custom}})}
+function pmOpen(){PM_D=pmCopy();pmRender();$('pmMask').classList.add('open')}
+function pmClose(){$('pmMask').classList.remove('open');PM_D=null}
+function pmRender(){
+ var g=PM_D[0],h='',n=0;
+ h+='<div class="pm-sub">项目册 · 断登 / 断充判定口径<span class="pm-cnt">'+PM_D.length+' 项</span></div>';
+ h+='<table class="pm-tb"><thead><tr><th style="min-width:110px">项目</th><th class="num" style="width:78px">断登阈值(h)</th><th class="num" style="width:82px">深度断登(h)</th><th class="num" style="width:78px">断充阈值(h)</th><th class="num" style="width:82px">深度断充(h)</th><th style="width:96px">口径来源</th><th style="width:76px">自定义</th></tr></thead><tbody>';
+ PM_D.forEach(function(r,i){
+  var isDef=i===0,en=isDef||r.custom===1;
+  if(!isDef&&r.custom===1)n++;
+  h+='<tr class="'+(isDef?'pm-def':'')+'"><td class="pn">'+esc(r.proj)+(isDef?' <span class="pm-badge c">基准</span>':'')+'</td>';
+  PM_KEYS.forEach(function(k){h+='<td class="num"><input class="pm-inp" type="number" min="1" max="9999" data-pm="'+i+'|'+k+'" value="'+r[k]+'"'+(en?'':' disabled')+'></td>'});
+  h+='<td>'+(isDef?'<span class="pm-badge c">全局默认</span>':(r.custom===1?'<span class="pm-badge c">项目自定义</span>':'<span class="pm-badge d">继承全局默认</span>'))+'</td>';
+  h+='<td>'+(isDef?'<span class="pm-rst dis">—</span>':'<label class="pm-sw'+(r.custom===1?' on':'')+'"><input type="checkbox" data-pmc="'+i+'"'+(r.custom===1?' checked':'')+'>自定义</label>')+'</td></tr>';
+ });
+ h+='</tbody></table>';
+ h+='<div class="pm-tip">① <b>断登</b>＝最后登录时间距今 ≥ 阈值；<b>深度断登</b>为更高一级告警，用于触发 P0/P1 升级。<br>② <b>断充</b>＝最后充值时间距今 ≥ 阈值（未充值用户不参与断充判定，单独标记「未付费」）。<br>③ 未勾选「自定义」的项目自动继承全局默认，全局默认变更时同步生效。<br>④ 全局默认：<b>断登 ≥ 24 小时，深度断登 ≥ 72 小时，断充 ≥ 72 小时，深度断充 ≥ 168 小时</b>。</div>';
+ h+='<div class="pm-sub">小程序会员等级 / 积分规则</div>';
+ h+='<table class="pm-tb"><thead><tr><th style="width:110px">等级</th><th style="width:130px">累计充值门槛</th><th style="width:110px">积分换算</th><th>会员权益</th></tr></thead><tbody>';
+ MEM.forEach(function(m,i){
+  var nx=MEM[i+1];
+  h+='<tr><td class="pn" style="color:'+m.c+'">'+m.ic+' '+esc(m.n)+(i===MEM.length-1?' <span class="pm-badge c">最高级</span>':'')+'</td>'
+   +'<td>'+(i===0?'—':'≥ ¥'+m.min.toLocaleString())+'</td>'
+   +'<td>累充 ÷ 10（向下取整）</td>'
+   +'<td style="color:var(--wx-text2)">'+esc(m.rt)+'</td></tr>';
+ });
+ h+='</tbody></table>';
+ h+='<div class="pm-tip">积分口径：<b>会员积分 = 累计充值金额 ÷ 10（向下取整）</b>，随充值实时累加；等级按累计充值金额自动升降，无需人工调整。<br>示例：累计充值 ¥12,540 → <b>黄金会员</b>，积分 <b>1,254</b> 分，距铂金会员还需 ¥7,460。</div>';
+ $('pmBd').innerHTML=h;
+ $('pmSp').innerHTML='当前 <b style="color:var(--wx-primary)">'+n+'</b> 个项目使用自定义口径，其余 '+(PM_D.length-1-n)+' 个继承全局默认（断登 ≥24h / 断充 ≥72h）';
+}
+function pmResetAll(){
+ PM_D=PM_D.map(function(r,i){return{proj:r.proj,login:PARAM_DEF.login,deepLogin:PARAM_DEF.deepLogin,rech:PARAM_DEF.rech,deepRech:PARAM_DEF.deepRech,custom:0}});
+ pmRender();toast('已恢复全部默认口径（断登 ≥24h / 断充 ≥72h）')}
+$('pmX').onclick=pmClose;$('pmCancel').onclick=pmClose;$('pmReset').onclick=pmResetAll;$('pmRail').onclick=pmOpen;
+$('pmMask').onclick=function(e){if(e.target===$('pmMask'))pmClose()};
+$('pmSave').onclick=function(){
+ if(!PM_D)return;
+ var bad=[];
+ PM_D.forEach(function(r,i){if(i===0||r.custom!==1)return;
+  if(r.deepLogin<=r.login)bad.push(r.proj+'：深度断登须大于断登阈值');
+  if(r.deepRech<=r.rech)bad.push(r.proj+'：深度断充须大于断充阈值');});
+ if(bad.length){toast('校验未通过：'+bad[0],1);return}
+ PROJ_PARAM=PM_D.map(function(r){return{proj:r.proj,login:r.login,deepLogin:r.deepLogin,rech:r.rech,deepRech:r.deepRech,custom:r.custom}});
+ pmClose();rBody();toast('参数已保存并生效，客户动态已按新口径重算')};
+$('pmBd').addEventListener('change',function(e){
+ var cb=e.target.closest('[data-pmc]');
+ if(cb){var i=+cb.dataset.pmc,r=PM_D[i];
+  if(cb.checked){r.login=PM_D[0].login;r.deepLogin=PM_D[0].deepLogin;r.rech=PM_D[0].rech;r.deepRech=PM_D[0].deepRech;r.custom=1;toast(r.proj+' 已开启自定义口径，请设置阈值')}
+  else{r.custom=0}
+  pmRender();return}
+ var ip=e.target.closest('[data-pm]');
+ if(ip){var p=ip.dataset.pm.split('|'),row=PM_D[+p[0]],v=Math.max(1,Math.min(9999,parseInt(ip.value,10)||1));
+  row[p[1]]=v;ip.value=v}
+});
+function traceHtml(c){var tns={},bys={};
+ c.trace.forEach(function(t){tns[t.tn]=(tns[t.tn]||0)+1;bys[t.by]=(bys[t.by]||0)+1});
+ var total=c.trace.length;
+ /* 默认展示类型项（按此顺序排序；类型集合待产品确认后可增删） */
+ var TRACE_TYPE_DEF=['跟进','充值','素材','添加','打标','客诉'];
+ var tnlist=Object.keys(tns).sort(function(a,b){var ia=TRACE_TYPE_DEF.indexOf(a),ib=TRACE_TYPE_DEF.indexOf(b);if(ia<0)ia=99;if(ib<0)ib=99;return ia===ib?tns[b]-tns[a]:ia-ib});
+ var colors={跟进:'var(--blue)',素材:'var(--purple)',充值:'var(--green)',打标:'var(--gold)',添加:'var(--wx-primary)',客诉:'var(--red)'};
+ var day7=c.trace.filter(function(t){return /今天|昨天|\d{2}-\d{2}/.test(t.tm)}).length;
+ var bylist=Object.keys(bys);
+ var h='<div class="kpi"><div class="tk"><div class="k">累计跟进</div><div class="v">'+total+'</div><div class="u">条</div></div><div class="tk"><div class="k">近 7 天</div><div class="v">'+day7+'</div><div class="u">条</div></div><div class="tk"><div class="k">触达次数</div><div class="v">'+(tns['跟进']||0)+'</div><div class="u">次电话/微信/面访</div></div><div class="tk"><div class="k">操作人员</div><div class="v">'+bylist.length+'</div><div class="u">人</div></div></div>';
+ /* ① 行为时间线（优先展示） */
+ h+='<div class="sect">行为时间线 · 按时间倒序</div><div class="tl">';
+ h+=c.trace.map(function(t){return '<div class="tli"><div class="tt"><span class="ty" style="color:'+t.cf+';background:'+t.cf+'1a">'+esc(t.tn)+'</span>'+esc(t.x)+'</div><div class="tm">'+esc(t.tm)+' · '+esc(t.by)+'</div></div>'}).join('');
+ h+='</div>';
+ /* ② 行为类型分布 */
+ h+='<div class="sect">行为类型分布 · 默认展示 '+TRACE_TYPE_DEF.length+' 类<span class="slk" data-tracedef="1">默认类型项</span></div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">';
+ tnlist.forEach(function(k){var n=tns[k],pct=Math.round(n/total*100),cl=colors[k]||'var(--wx-text2)';
+  h+='<div style="flex:1;min-width:96px;background:var(--panel2);border-radius:6px;padding:8px 10px"><div style="display:flex;justify-content:space-between;align-items:center"><span class="ty" style="color:'+cl+';background:'+cl+'1a">'+esc(k)+'</span><b style="font-size:13px">'+n+'</b></div><div style="height:4px;background:var(--border);border-radius:2px;margin-top:5px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+cl+';border-radius:2px"></div></div><div style="font-size:10px;color:var(--wx-text3);margin-top:3px">'+pct+'%</div></div>'});
+ h+='</div>';
+ /* ③ 操作人分布 */
+ h+='<div class="sect">操作人分布</div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">';
+ bylist.forEach(function(b){h+='<span class="tagchip on">'+esc(b)+' · '+bys[b]+'</span>'});
+ h+='</div>';
+ h+='<div class="note">📊 跟进日志由系统自动抓取账号行为轨迹（电话 / 微信 / 面访 / 素材发送 / 充值 / 打标 / 添加等），<b>无需人工手动录入</b>，数据可同步至后台审计与质检调取。<br>🕘 时间线优先展示最新行为，便于先看「最近发生了什么」；类型分布与操作人分布作为统计补充。<br>🧩 默认展示类型项：<b>跟进 / 充值 / 素材 / 添加 / 打标 / 客诉</b>（按此顺序统计排序，类型集合待产品确认）。</div>';
+ return h}
+function tagsHtml(c){
+ var cur=st.tags||(c.tags||[]).map(function(t){return t[0]});
+ var q=(st.tagQ||'').trim();
+ var h='<div class="tq"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="tagQIn" placeholder="搜索标签" value="'+esc(q)+'"></div>';
+ TAGTREE.forEach(function(cat){
+  var selN=0;cat.groups.forEach(function(g){g.tags.forEach(function(t){if(cur.indexOf(t)>-1)selN++})});
+  h+='<div class="tcat"><i style="background:'+cat.c+'"></i>'+esc(cat.cat)+'<span class="cn">'+(selN?'已选 '+selN:'未选择')+'</span></div>';
+  cat.groups.forEach(function(g){
+   var tags=q?g.tags.filter(function(t){return t.indexOf(q)>-1}):g.tags;
+   if(q&&!tags.length)return;
+   var key=cat.cat+'|'+g.g;
+   var open=q?true:!!st.tagOpen[key];
+   var shown=open?tags:tags.slice(0,5);
+   h+='<div class="tgname">'+esc(g.g)+'</div><div class="tagbox">';
+   shown.forEach(function(t){h+='<span class="tagchip'+(cur.indexOf(t)>-1?' on':'')+'" data-tag="'+esc(t)+'">'+esc(t)+'</span>'});
+   h+='</div>';
+   if(!q&&tags.length>5)h+='<div class="tagmore" data-tmore="'+esc(key)+'">'+(open?'收起 ∧':'剩余 '+(tags.length-5)+' 个 ∨')+'</div>';
+  });
+ });
+ h+='<div class="tagfoot"><span class="cnt">已选 <b>'+cur.length+'</b> 个标签 · 同步 CRM 客户档案</span><button class="tbtn" id="tagCancel">取消</button><button class="tbtn pri" id="tagOk">确定</button></div>';
+ h+='<div class="note">🏷 标签分三大类（对齐企微官版）：<b>企业标签</b> 管理员统一配置、全公司可用；<b>系统标签</b> 由系统按客户行为自动打/撤，不可手动修改；<b>个人标签</b> 员工自定义、仅自己可见。点击标签即打/撤，点「确定」保存。</div>';
+ return h}
+function scriptsHtml(){var list=SCRIPTS[st.scCat]||[];
+ var h='<div class="sc-wrap"><div class="sc-side">';
+ Object.keys(SCRIPTS).forEach(function(k){h+='<div class="sc-ci'+(st.scCat===k?' on':'')+'" data-scc="'+esc(k)+'"><span>'+esc(k)+'</span><span class="n">'+SCRIPTS[k].length+'</span></div>'});
+ h+='</div><div class="sc-main">';
+ h+=list.map(function(s,i){return '<div class="sc"><div class="sh"><span class="sn">'+esc(s.n)+'</span><span class="use" data-scuse="'+esc(st.scCat)+'|'+i+'">插入输入框 ›</span></div><div class="stx">'+scText(s.t)+'</div></div>'}).join('');
+ h+='</div></div>';
+ return h+'<div class="note">话术变量 <span class="var">{昵称}</span><span class="var">{备注}</span><span class="var">{企业}</span> 插入时按当前客户自动替换。左侧分类栏对齐企微官版「话术库」侧边结构。</div>'}
+function membersHtml(c){var all=c.mlist||[];var l=all.filter(function(m){return st.memF==='hv'?(m.tier==='super_star'||m.tier==='five_star'||m.tier==='four_star'):true});
+ var h='<div class="chips2"><span class="chip'+(st.memF==='all'?' on':'')+'" data-mf="all">全部 · '+all.length+'</span><span class="chip'+(st.memF==='hv'?' on':'')+'" data-mf="hv">高价值 · '+all.filter(function(m){return m.tier==='super_star'||m.tier==='five_star'||m.tier==='four_star'}).length+'</span></div>';
+ return h+l.map(function(m){var d=STARC[m.tier];return '<div class="mrow" data-mem="'+esc(m.n)+'"><div class="av" style="background:'+m.c+'">'+esc(m.n[0])+'</div><div style="flex:1;min-width:0"><div class="nm">'+esc(m.n)+(m.admin?'<span class="mk admin">管理员</span>':'')+'<span class="mk hv" style="color:'+d[1]+';background:'+d[1]+'1a">'+d[0]+'</span></div><div class="sub2">'+esc(m.r)+'</div></div></div>'}).join('')+'<div class="note">点击成员可查看客户画像并发起单聊（占位）。</div>'}
+function groupStatHtml(c){var h='<div class="kpi"><div class="tk"><div class="k">近7日群消息</div><div class="v">'+c.kpi.msg7+'</div></div><div class="tk"><div class="k">活跃客户</div><div class="v">'+c.kpi.cust7+'</div></div><div class="tk"><div class="k">转化率</div><div class="v">'+c.kpi.conv+'</div></div></div>';
+ return h+'<div class="note">口径：统计当前客户群全部成员会话消息；转化率=近7日产生充值/成单客户占活跃客户比例。趋势明细见「企微看板」。</div>'}
+function groupInfoHtml(c){var h='<div class="sect">群公告</div><div class="note" style="margin-top:0">📢 '+esc(c.notice)+'</div>';
+ return h+'<div class="sect">群信息</div>'+grid([['群名称',esc(c.name)],['群人数',c.members+' 人'],['我的身份',esc(c.myRole)],['负责人',esc(c.owner)]])+'<div class="note">群管理（加人/移除/发公告）见对话框页眉「群管理」入口。</div>'}
+/* 群聊信息 · 对齐个微 PC 群聊界面：群公告 → 群成员 → 群设置 */
+function ginfoHtml(c){
+ var all=c.mlist||[];
+ var hv=all.filter(function(m){return m.tier==='super_star'||m.tier==='five_star'||m.tier==='four_star'});
+ var l=st.memF==='hv'?hv:all;
+ var h='<div class="sect" style="margin-top:0">群公告<span class="slk" data-gact="kick" style="margin-right:8px">移除成员</span><span class="slk" data-gact="invite">＋ 添加</span></div>';
+ h+='<div class="anno"><div class="at">📢 '+esc(c.notice)+'</div><div class="am">发布人 '+esc(c.owner)+' · 今天 10:24 · 全员可见</div></div>';
+ h+='<div class="sect">群成员（'+c.members+'）</div>';
+ h+='<div class="chips2" style="margin-bottom:6px"><span class="chip'+(st.memF==='all'?' on':'')+'" data-mf="all">全部 · '+all.length+'</span><span class="chip'+(st.memF==='hv'?' on':'')+'" data-mf="hv">高价值 · '+hv.length+'</span></div>';
+ h+=l.map(function(m){var d=STARC[m.tier];return '<div class="mrow" data-mem="'+esc(m.n)+'"><div class="av" style="background:'+m.c+'">'+esc(m.n[0])+'</div><div style="flex:1;min-width:0"><div class="nm">'+esc(m.n)+(m.admin?'<span class="mk admin">管理员</span>':'')+'<span class="mk hv" style="color:'+d[1]+';background:'+d[1]+'1a">'+d[0]+'</span></div><div class="sub2">'+esc(m.r)+'</div></div></div>'}).join('');
+ h+='<div class="sect">群设置</div>';
+ h+=grid([['群名称',esc(c.name)],['我的身份',esc(c.myRole)],['负责人',esc(c.owner)],['群类型','企微客户群']]);
+ h+='<div class="gset"><span class="gk">置顶聊天</span><span class="sw on" data-gsw="top"><i></i></span></div>';
+ h+='<div class="gset"><span class="gk">保存到通讯录</span><span class="sw" data-gsw="save"><i></i></span></div>';
+ h+='<div class="gset"><span class="gk">显示群成员昵称</span><span class="sw on" data-gsw="nick"><i></i></span></div>';
+ h+='<div class="gset"><span class="gk">群管理（负责人可见）</span><span class="gact" data-gact="mgr">进入 ›</span></div>';
+ h+='<div class="note">👥 群聊信息布局对齐个微 PC：群公告 → 群成员（全部/高价值筛选）→ 群设置；近 7 日消息 / 活跃 / 转化率等经营数据移至「群统计」Tab。</div>';
+ return h}
+function rBody(){var c=conv(),h='';archHtml();
+ if(c.type==='g'){h=st.tab==='gstat'?groupStatHtml(c):ginfoHtml(c)}
+ else{if(st.tab==='profile')h=profileHtml(c);else if(st.tab==='trace')h=traceHtml(c);else if(st.tab==='tags')h=tagsHtml(c);else h=scriptsHtml()}
+ $('sbbody').innerHTML=h}
+function selectConv(id){st.cur=id;st.tab=conv().type==='g'?'ginfo':'profile';st.tags=null;st.memF='all';st.tagQ='';st.tagOpen={};if(conv().crm)st.plat=conv().crm.plat;rList();rChat();rTabs();rBody()}
+/* ---------- 事件 ---------- */
+$('empEntry').onclick=function(e){e.stopPropagation();st.accOpen=!st.accOpen;$('accPop').classList.toggle('open',st.accOpen)};
+$('apList').onclick=function(e){e.stopPropagation();var el=e.target.closest('[data-emp]');if(!el)return;st.emp=el.dataset.emp;st.star='all';var first=CONVS.find(function(c){return c.emp===st.emp});st.accOpen=false;$('accPop').classList.remove('open');rAcc();rFilters();if(first)selectConv(first.id);else{$('convs').innerHTML='<div style="text-align:center;color:var(--muted);padding:40px 0;font-size:12px">该员工暂无客户会话</div>'}toast('已切换到企微账号：'+emp(st.emp).name)};
+document.addEventListener('click',function(){$('accPop').classList.remove('open');st.accOpen=false;$('lpMenu').classList.remove('open');$('gmMenu').classList.remove('open')});
+$('accPop').onclick=function(e){e.stopPropagation()};
+$('lpPlus').onclick=function(e){e.stopPropagation();$('lpMenu').classList.toggle('open')};
+$('lpMenu').onclick=function(e){e.stopPropagation();var el=e.target.closest('[data-lp]');if(!el)return;toast(el.dataset.lp==='group'?'发起客户群（企微群聊）':'添加客户（企微外部联系人）');$('lpMenu').classList.remove('open')};
+$('lpFilters').onclick=function(e){var el=e.target.closest('[data-star]');if(!el)return;st.star=el.dataset.star;rFilters();rList()};
+$('convs').onclick=function(e){var el=e.target.closest('.ci');if(!el)return;selectConv(el.dataset.id)};
+function send(){var v=$('inp').value.trim();if(!v)return;conv().msgs.push({f:'me',text:v,tm:'刚刚'});$('inp').value='';rChat();toast('演示消息已添加')}
+$('sendB').onclick=send;$('inp').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}});
+$('tbScript').onclick=function(){if(conv().type==='g'){toast('话术库在输入区上方「⚡」或右侧「话术库」Tab',0);return}st.tab='scripts';rTabs();rBody()};
+$('gmA').onclick=function(e){e.stopPropagation();$('gmMenu').classList.toggle('open')};
+$('gmMenu').onclick=function(e){e.stopPropagation();var el=e.target.closest('[data-gm]');if(!el)return;var a=el.dataset.gm;toast(a==='invite'?'添加群成员':a==='kick'?'移除群成员（勾选模式）':'发布/编辑群公告');$('gmMenu').classList.remove('open')};
+$('histA').onclick=function(){toast('打开聊天记录浮窗（ChatHistoryModal）')};
+$('moreA').onclick=function(){document.body.classList.toggle('nosb')};
+$('sbtabs').addEventListener('click',function(e){var t=e.target.closest('button');if(!t)return;st.tab=t.dataset.tab;rTabs();rBody()});
+$('archEl').addEventListener('click',function(e){
+ var pl=e.target.closest('[data-plat]');if(pl){st.plat=pl.dataset.plat;archHtml();toast('已切换平台：'+(st.plat==='24youxi'?'贰肆sdk':'瓜游sdk'));return}
+ var rm=e.target.closest('#remarkE');if(rm){toast('编辑客户备注（同步企微 + CRM）');return}});
+$('sbbody').addEventListener('click',function(e){
+ if(e.target.closest('[data-pmopen]')){pmOpen();return}
+ if(e.target.closest('[data-tracedef]')){toast('默认展示类型项：跟进 / 充值 / 素材 / 添加 / 打标 / 客诉（顺序即统计排序，待确认）');return}
+ var w=e.target.closest('[data-word]');if(w){$('lw').value=w.dataset.word;toast('已按关键词「'+w.dataset.word+'」检索会话');return}
+ var tg=e.target.closest('[data-tag]');if(tg){var c=conv();var cur=st.tags||(c.tags||[]).map(function(t){return t[0]});var i=cur.indexOf(tg.dataset.tag);if(i>-1)cur.splice(i,1);else cur.push(tg.dataset.tag);st.tags=cur;rBody();toast(i>-1?'已移除标签':'已添加标签：'+tg.dataset.tag);return}
+ var sc=e.target.closest('[data-scc]');if(sc){st.scCat=sc.dataset.scc;rBody();return}
+ var su=e.target.closest('[data-scuse]');if(su){var p=su.dataset.scuse.split('|');var t=SCRIPTS[p[0]][+p[1]].t;$('inp').value=fillVars(t);$('inp').focus();toast('话术已插入输入框（变量已替换）');return}
+ var mf=e.target.closest('[data-mf]');if(mf){st.memF=mf.dataset.mf;rBody();return}
+ var tm=e.target.closest('[data-tmore]');if(tm){var k2=tm.dataset.tmore;st.tagOpen[k2]=!st.tagOpen[k2];rBody();return}
+ var ga=e.target.closest('[data-gact]');if(ga){var a2=ga.dataset.gact;toast(a2==='invite'?'添加群成员（勾选模式）':a2==='kick'?'移除群成员（勾选模式）':a2==='anno'?'编辑群公告（同步企微）':'进入群管理（负责人权限）');return}
+ var gs=e.target.closest('[data-gsw]');if(gs){gs.classList.toggle('on');toast('「'+gs.dataset.gsw+'」已'+(gs.classList.contains('on')?'开启':'关闭')+'（仅本机演示）');return}
+ var tc=e.target.closest('#tagCancel');if(tc){st.tags=null;st.tagQ='';st.tagOpen={};rBody();toast('已取消，标签未保存');return}
+ var to=e.target.closest('#tagOk');if(to){var n2=(st.tags||(conv().tags||[]).map(function(t){return t[0]})).length;st.tags=null;st.tagQ='';st.tagOpen={};rBody();toast('演示：本地已保存 '+n2+' 个标签，未同步至 CRM');return}
+ var mem=e.target.closest('[data-mem]');if(mem){toast('查看客户画像：'+mem.dataset.mem+'（占位）');return}});
+$('sbbody').addEventListener('input',function(e){
+ if(e.target.id==='tagQIn'){st.tagQ=e.target.value;var pos=e.target.selectionStart;rBody();var ni=$('tagQIn');if(ni){ni.focus();try{ni.setSelectionRange(pos,pos)}catch(_){}}}});
+$('sbbody').addEventListener('keydown',function(e){});
+$('th').onclick=function(){var d=$('app').getAttribute('data-mode')==='dark';$('app').setAttribute('data-mode',d?'light':'dark');toast(d?'已切换浅色':'已切换深色')};
+rAcc();rFilters();selectConv('c1');
+})();
+</script>
+</body>
+</html>

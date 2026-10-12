@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <title>参数配置 · 聚玩经营数据中台</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #f5f6f8; color: #1f2937; font: 14px/1.55 "PingFang SC", "Microsoft YaHei", sans-serif; }
+      button, input, select { font: inherit; }
+      .page { max-width: 1500px; margin: 0 auto; padding: 16px; }
+      .page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+      h1 { margin: 0 0 4px; color: #1d2939; font-size: 20px; font-weight: 650; }
+      h2 { margin: 0; color: #1d2939; font-size: 15px; font-weight: 600; }
+      p { margin: 4px 0 0; }
+      .muted { color: #667085; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+      .button, .link-button { display: inline-flex; justify-content: center; align-items: center; min-height: 32px; padding: 5px 12px; border: 1px solid #d0d5dd; border-radius: 6px; background: #fff; color: #344054; text-decoration: none; cursor: pointer; }
+      .button:hover, .link-button:hover { color: #1677ff; border-color: #91caff; }
+      .button.primary { border-color: #1677ff; background: #1677ff; color: #fff; }
+      .button.danger { color: #d92d20; }
+      .button:disabled { cursor: not-allowed; opacity: .55; }
+      .notice { margin-bottom: 16px; padding: 10px 12px; border: 1px solid #b2ddff; border-radius: 8px; background: #eff8ff; color: #175cd3; }
+      .error { margin-bottom: 16px; padding: 10px 12px; border: 1px solid #fecdca; border-radius: 8px; background: #fef3f2; color: #b42318; }
+      .success { margin-bottom: 16px; padding: 10px 12px; border: 1px solid #abefc6; border-radius: 8px; background: #ecfdf3; color: #027a48; }
+      .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; }
+      .col-12 { grid-column: span 12; }
+      .col-6 { grid-column: span 6; }
+      .col-4 { grid-column: span 4; }
+      .card { min-width: 0; padding: 16px; border: 1px solid #eaecf0; border-radius: 9px; background: #fff; box-shadow: 0 1px 2px rgba(16,24,40,.04); }
+      .card-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+      .tag { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 3px 9px; border: 1px solid #d0d5dd; border-radius: 999px; background: #f9fafb; color: #344054; }
+      .tag button { padding: 0; border: 0; background: transparent; color: #667085; cursor: pointer; }
+      .tags { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 8px; min-height: 40px; margin: 14px 0; }
+      .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+      .field { display: flex; flex-direction: column; gap: 6px; min-width: 170px; }
+      .field label { color: #344054; font-weight: 550; }
+      input, select { height: 34px; min-width: 0; padding: 5px 9px; border: 1px solid #d0d5dd; border-radius: 6px; background: #fff; color: #1d2939; }
+      input:focus, select:focus { outline: 2px solid #b2ddff; border-color: #84caff; }
+      input[type=number] { width: 150px; }
+      .unit { color: #667085; }
+      .table-wrap { overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; text-align: left; }
+      th, td { padding: 8px 10px; border-bottom: 1px solid #eaecf0; vertical-align: middle; }
+      th { background: #f9fafb; color: #475467; font-size: 12px; font-weight: 600; }
+      td input { width: 100%; }
+      td select { min-width: 110px; }
+      .rule-card { height: 100%; }
+      .level { display: inline-flex; padding: 2px 8px; border-radius: 999px; background: #fef0c7; color: #93370d; font-size: 12px; }
+      .level.high { background: #fee4e2; color: #b42318; }
+      .level.low { background: #f2f4f7; color: #475467; }
+      .rule-row + .rule-row { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eaecf0; }
+      .bottom-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+      .stat { color: #175cd3; font-size: 30px; font-weight: 650; line-height: 1.2; }
+      .stat-label { color: #667085; margin-bottom: 8px; }
+      .definition { display: grid; grid-template-columns: 130px 1fr; gap: 10px 16px; }
+      .definition dt { color: #667085; }
+      .definition dd { margin: 0; color: #344054; }
+      .loading { padding: 56px 12px; color: #667085; text-align: center; }
+      @media (max-width: 900px) { .col-6, .col-4 { grid-column: span 12; } }
+      @media (max-width: 560px) { .page { padding: 12px; } .field { width: 100%; } input[type=number] { width: 100%; } .definition { grid-template-columns: 1fr; gap: 2px; } .definition dd { margin-bottom: 8px; } }
+    </style>
+  </head>
+  <body>
+    <main class="page" id="app"><div class="loading">正在加载配置…</div></main>
+    <script defer src="/parameter-config.js?v=20260928-parameter-config-v1"></script>
+  </body>
+</html>

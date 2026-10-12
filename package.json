@@ -1,0 +1,12 @@
+{
+  "name": "datacenter-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "setup": "npm ci --prefix system-console",
+    "build": "npm run build --prefix system-console",
+    "dev": "npm run dev --prefix system-console",
+    "preview": "node scripts/preview.mjs"
+  }
+}

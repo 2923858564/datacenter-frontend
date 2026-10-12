@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI员工LC（beta版）</title>
+  <style>
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #fcfcfc; }
+    body { font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    #status { position: fixed; inset: 0; display: grid; place-items: center; color: #667085; font-size: 14px; }
+    #chat { width: 100%; height: 100%; border: 0; display: none; background: #fcfcfc; }
+  </style>
+</head>
+<body>
+  <div id="status">正在打开 AI员工LC（beta版）…</div>
+  <iframe
+    id="chat"
+    title="AI员工LC（beta版）聊天区域"
+    allow="clipboard-read; clipboard-write"
+    referrerpolicy="no-referrer"
+  ></iframe>
+  <script>
+    (function () {
+      var token = sessionStorage.getItem("dc_token") || localStorage.getItem("dc_token") || localStorage.getItem("sso_token") || "";
+      if (!token) {
+        location.replace("/login");
+        return;
+      }
+      fetch("/api/v1/auth/me", { headers: { Authorization: "Bearer " + token } })
+        .then(function (response) {
+          if (!response.ok) throw new Error("unauthorized");
+          var orderId = new URLSearchParams(location.search).get("work_order_id");
+          var ticketPath = orderId
+            ? "/api/v1/work-orders/" + encodeURIComponent(orderId) + "/conversation-ticket"
+            : "/api/v1/auth/staffdeck-ticket";
+          return fetch(ticketPath, {
+            method: "POST",
+            headers: { Authorization: "Bearer " + token }
+          });
+        })
+        .then(function (response) {
+          if (!response.ok) throw new Error("sso_failed");
+          return response.json();
+        })
+        .then(function (payload) {
+          var localHost = location.hostname === "127.0.0.1" || location.hostname === "localhost";
+          var staffdeckOrigin = localHost
+            ? "http://127.0.0.1:5173"
+            : "https://staffdeck.example.invalid";
+          var frame = document.getElementById("chat");
+          var loadCount = 0;
+          var timeout = window.setTimeout(function () {
+            document.getElementById("status").textContent = "AI员工LC连接超时，请关闭后重试";
+          }, 15000);
+          frame.addEventListener("load", function () {
+            loadCount += 1;
+            if (loadCount < 2) return;
+            window.clearTimeout(timeout);
+            document.getElementById("status").style.display = "none";
+            frame.style.display = "block";
+          });
+          frame.src = staffdeckOrigin + "/sso#ticket=" + encodeURIComponent(payload.ticket) +
+            (payload.session_id ? "&session_id=" + encodeURIComponent(payload.session_id) : "");
+        })
+        .catch(function (error) {
+          if (error.message === "unauthorized") {
+            sessionStorage.removeItem("dc_token");
+            location.replace("/login");
+            return;
+          }
+          document.getElementById("status").textContent = "AI员工LC登录连接失败，请刷新重试";
+        });
+    })();
+  </script>
+</body>
+</html>

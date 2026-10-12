@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>聚玩经营数据中台</title>
+    <script type="module" crossorigin src="/assets/index-BsQR_PDg.js?v=8F5333E8C512"></script>
+  <script src="/ai-overview.js?v=20260923-ai-overview-template-v7"></script>
+    <link rel="modulepreload" crossorigin href="/assets/react-Dxa-hfIV.js?v=h4b5ac7525171">
+    <link rel="modulepreload" crossorigin href="/assets/query-DFJle4bt.js?v=h4b5ac7525171">
+    <link rel="modulepreload" crossorigin href="/assets/antd-DDGfblwO.js?v=h4b5ac7525171">
+
+    <link rel="stylesheet" crossorigin href="/assets/index-hDBTz5iS.css?v=h4b5ac7525171">
+  
+    <style>
+      /* 数据中台：表格容器固定高度滚动，表格内容不再撑破卡片（V1.4.62） */
+      .ant-card:has(.ant-table) {
+        height: auto !important;
+      }
+      .ant-card:has(.ant-table) .ant-card-body {
+        height: auto !important;
+        max-height: none !important;
+        overflow: hidden;
+      }
+      .ant-table-wrapper {
+        max-height: 460px;
+        overflow: auto;
+      }
+      .ant-table-wrapper .ant-table-content,
+      .ant-table-wrapper .ant-table-body {
+        max-height: none !important;
+        overflow: visible !important;
+      }
+      .ant-table-thead > tr > th {
+        position: sticky !important;
+        top: 0;
+        z-index: 3;
+        background: #fafafa !important;
+      }
+    </style>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

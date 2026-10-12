@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>角色资料补采进度</title>
+<style>
+  body{margin:0;background:#f4f7fb;font:14px/1.7 -apple-system,"Microsoft YaHei",sans-serif;color:#1d2939}
+  .wrap{max-width:720px;margin:48px auto;padding:24px 28px;background:#fff;border:1px solid #e6e8f0;border-radius:10px}
+  h1{margin:0 0 4px;font-size:18px}
+  .sub{color:#667085;font-size:12px;margin-bottom:18px}
+  .bar{height:10px;background:#eef1f6;border-radius:6px;overflow:hidden;margin:10px 0 6px}
+  .bar i{display:block;height:100%;background:#1677ff;width:0}
+  .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f2f4f7}
+  .row span:first-child{color:#667085}
+  .alive{color:#079455;font-weight:600}
+  .stale{color:#b42318;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>角色资料补采进度</h1>
+  <div class="sub">数据源：贰肆角色记录页（按包体 × 注册日） → ods_registered_roles_es</div>
+  <div class="bar"><i id="bar"></i></div>
+  <div class="row"><span>状态</span><b id="state">加载中…</b></div>
+  <div class="row"><span>进度</span><b id="progress">—</b></div>
+  <div class="row"><span>当前分组</span><b id="group">—</b></div>
+  <div class="row"><span>已写入角色记录</span><b id="written">—</b></div>
+  <div class="row"><span>最近心跳</span><b id="beat">—</b></div>
+  <div class="sub" id="hint" style="margin-top:14px"></div>
+</div>
+<script>
+async function tick(){
+  try{
+    const r = await fetch('/role-fill-status.json?t=' + Date.now(), {cache:'no-store'});
+    const s = await r.json();
+    const total = s.total || 0, index = s.index || 0;
+    const pct = total ? Math.round(index * 100 / total) : 0;
+    document.getElementById('bar').style.width = pct + '%';
+    document.getElementById('state').textContent = ({starting:'启动中',running:'运行中',finished:'已完成'})[s.state] || s.state || '未知';
+    document.getElementById('progress').textContent = index + ' / ' + total + '（' + pct + '%）';
+    document.getElementById('group').textContent = s.group || '—';
+    document.getElementById('written').textContent = (s.written || 0).toLocaleString() + ' 条';
+    document.getElementById('beat').textContent = s.updated_at || '—';
+    const age = s.updated_at ? (Date.now() - new Date(s.updated_at.replace(' ','T')).getTime()) / 1000 : 1e9;
+    const beat = document.getElementById('beat');
+    const running = (s.collector_running || 0) > 0;
+    beat.className = running ? 'alive' : (age < 300 ? 'alive' : 'stale');
+    document.getElementById('hint').textContent = running
+      ? '采集进程在运行（当前分组处理中，日志 ' + Math.round(age) + ' 秒前更新）'
+      : (age < 300 ? '采集进程暂时空闲（5 分钟内会自动拉起）'
+                   : '已停止，5 分钟内会自动重新拉起并继续补采');
+  }catch(e){
+    document.getElementById('state').textContent = '读取失败';
+  }
+}
+tick(); setInterval(tick, 5000);
+</script>
+</body>
+</html>
